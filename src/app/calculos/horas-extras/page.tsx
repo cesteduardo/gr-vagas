@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { CabecaCalculos } from '@/components/cabeca-calculos';
 import { HorasExtras } from '@/components/calculadoras';
 
 export const metadata: Metadata = { title: 'Calculadora de horas extras', description: 'Calcule horas extras a 50% e 100% com reflexo no DSR, ou confira quanto fez hoje pelo horário de ponto. Grátis e sem cadastro.', alternates: { canonical: '/calculos/horas-extras' } };
@@ -7,7 +6,6 @@ export const metadata: Metadata = { title: 'Calculadora de horas extras', descri
 export default function Pagina() {
   return (
     <>
-      <CabecaCalculos titulo="Horas extras." cinza="Na ponta do lápis." texto="Veja quanto vai receber no mês ou confira o que fez hoje pelo horário de ponto." />
       <div className="folha">
         <section className="secao embrulho"><HorasExtras /></section>
         <section className="embrulho calc-nota">

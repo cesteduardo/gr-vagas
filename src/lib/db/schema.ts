@@ -45,6 +45,8 @@ export const empresas = pgTable('empresas', {
   perfil: jsonb('perfil').$type<import('@/lib/empresa').PerfilEmpresa>().notNull().default({}),
   logo: bytes('logo'),
   logoMime: text('logo_mime'),
+  capa: bytes('capa'),
+  capaMime: text('capa_mime'),
   criadoEm: quando('criado_em').notNull().defaultNow(),
 });
 
@@ -67,6 +69,7 @@ export const vagas = pgTable('vagas', {
   descricao: text('descricao').notNull(),
   requisitos: text('requisitos').notNull(),
   beneficios: text('beneficios').notNull(),
+  tags: jsonb('tags').$type<string[]>().notNull().default([]),
   estado: text('estado').$type<'aberta' | 'pausada' | 'encerrada'>().notNull().default('aberta'),
   destaque: boolean('destaque').notNull().default(false),
   busca: text('busca').notNull(),
@@ -105,6 +108,8 @@ export const perfis = pgTable('perfis', {
   resumo: text('resumo').notNull().default(''),
   curriculo: bytes('curriculo'),
   curriculoNome: text('curriculo_nome'),
+  foto: bytes('foto'),
+  fotoMime: text('foto_mime'),
   aceiteTalentosEm: quando('aceite_talentos_em'),
   cv: jsonb('cv').$type<import('@/lib/curriculo').Cv>().notNull().default({}),
   atualizadoEm: quando('atualizado_em').notNull().defaultNow(),

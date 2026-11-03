@@ -1,0 +1,1 @@
+ALTER TABLE "vagas" ADD COLUMN "tags" jsonb DEFAULT '[]'::jsonb NOT NULL;

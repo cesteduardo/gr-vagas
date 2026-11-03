@@ -5,7 +5,7 @@ import { acaoSalvarEmpresa } from '@/app/acoes';
 import { AREAS, CIDADES } from '@/lib/config';
 import { formatarCnpj, TAMANHOS, type PerfilEmpresa } from '@/lib/empresa';
 import { formatarTelefone, normalizarTelefone } from '@/lib/forms/validators';
-import { CampoArquivo } from './campo-arquivo';
+import { CapaEmpresaEditor } from './perfil-imagens';
 import { Selecao } from './selecao';
 
 function Bloco({ numero, titulo, nota, children }: { numero: number; titulo: string; nota?: string; children: ReactNode }) {
@@ -18,11 +18,10 @@ function Bloco({ numero, titulo, nota, children }: { numero: number; titulo: str
   );
 }
 
-export function EditorEmpresa({ inicial }: { inicial: { id: string; nome: string; descricao: string; perfil: PerfilEmpresa; temLogo: boolean; slug: string } }) {
+export function EditorEmpresa({ inicial }: { inicial: { id: string; nome: string; descricao: string; perfil: PerfilEmpresa; temLogo: boolean; temCapa: boolean; slug: string } }) {
   const [nome, setNome] = useState(inicial.nome);
   const [descricao, setDescricao] = useState(inicial.descricao);
   const [p, setP] = useState<PerfilEmpresa>(inicial.perfil);
-  const [logo, setLogo] = useState(inicial.temLogo ? `/api/logo/${inicial.id}` : null);
   const [estado, setEstado] = useState<{ ok?: boolean; erros?: Record<string, string>; erro?: string }>({});
   const [salvando, setSalvando] = useState(false);
   const muda = (m: Partial<PerfilEmpresa>) => setP((a) => ({ ...a, ...m }));
@@ -42,20 +41,8 @@ export function EditorEmpresa({ inicial }: { inicial: { id: string; nome: string
       <Bloco numero={1} titulo="Identidade">
         <label className="campo inteiro"><span>Nome da empresa</span><input type="text" name="empresa" maxLength={80} value={nome} onChange={(e) => setNome(e.target.value)} {...inv('empresa')} />{msg('empresa')}</label>
         <div className="campo inteiro">
-          <span>Logo</span>
-          <div className="logo-linha">
-            {logo ? <img src={logo} alt="Logo atual" width={64} height={64} /> : <span className="inicial grande">{nome.charAt(0).toUpperCase()}</span>}
-            <CampoArquivo id="logo-empresa" accept="image/png,image/jpeg,image/webp" rotulo="Trocar logo" onChange={async (e) => {
-              const f = e.target.files?.[0];
-              if (!f) return;
-              const d = new FormData();
-              d.set('arquivo', f);
-              const r = await fetch('/api/logo', { method: 'POST', body: d });
-              const j = (await r.json()) as { url?: string; erro?: string };
-              if (j.url) setLogo(j.url);
-              else setEstado({ erro: j.erro ?? 'Não foi possível enviar o logo.' });
-            }} />
-          </div>
+          <span>Capa e logo</span>
+          <CapaEmpresaEditor empresaId={inicial.id} nome={nome} temCapa={inicial.temCapa} temLogo={inicial.temLogo} />
         </div>
       </Bloco>
 

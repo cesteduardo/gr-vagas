@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { EditorCurriculo } from '@/components/editor-curriculo';
+import { FotoCandidato } from '@/components/perfil-imagens';
 import { exigirCandidato } from '@/lib/auth/sessao';
 import { banco } from '@/lib/db/client';
 import { perfilDe } from '@/lib/perfis';
@@ -15,6 +16,7 @@ export default async function Perfil() {
         <h1 className="titulo-painel">Seu perfil</h1>
         <p className="leve" style={{ marginTop: 6 }}>Preencha como no seu currículo. As empresas às quais você se candidatar veem tudo isto.</p>
       </div>
+      <FotoCandidato id={u.id} nome={u.nome} temFoto={Boolean(p.temFoto)} />
       <EditorCurriculo inicial={{ titulo: p.titulo, cidadeSlug: p.cidadeSlug, resumo: p.resumo, talentos: Boolean(p.aceiteTalentosEm), cv: p.cv ?? {}, curriculoNome: p.curriculoNome, candidatoId: u.id }} />
     </div>
   );

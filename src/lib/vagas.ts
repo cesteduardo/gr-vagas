@@ -7,6 +7,7 @@ import { candidaturas, denuncias, empresas, usuarios, vagas, type ConfigArte } f
 import type { DadosVaga } from '@/lib/forms/vaga';
 import { arteValida, limites, planoDe } from '@/lib/planos';
 import { normalizar, paraSlug } from '@/lib/texto';
+import { beneficiosDoTexto, nomeDaTag } from '@/lib/tags';
 
 const DIA_MS = 24 * 60 * 60 * 1000;
 const sufixo = () => randomBytes(3).toString('hex');
@@ -14,7 +15,7 @@ export const POR_PAGINA = 20;
 
 type Tx = Parameters<Parameters<Banco['transaction']>[0]>[0];
 
-const camposBusca = (d: DadosVaga, cidade: string, empresa: string) => normalizar([d.titulo, d.area, d.contrato, d.modalidade, cidade, empresa, d.descricao, d.requisitos].join(' '));
+const camposBusca = (d: DadosVaga, cidade: string, empresa: string) => normalizar([d.titulo, d.area, d.contrato, d.modalidade, cidade, empresa, d.descricao, d.requisitos, ...(d.tags ?? []).map((t) => nomeDaTag(t) ?? ''), ...beneficiosDoTexto(d.beneficios)].join(' '));
 
 async function inserirVaga(tx: Banco | Tx, empresaId: string, empresaNome: string, d: DadosVaga, arte: ConfigArte) {
   const c = cidadePorSlug(d.cidadeSlug);
@@ -36,6 +37,7 @@ async function inserirVaga(tx: Banco | Tx, empresaId: string, empresaNome: strin
       descricao: d.descricao,
       requisitos: d.requisitos,
       beneficios: d.beneficios,
+      tags: d.tags ?? [],
       busca: camposBusca(d, c.nome, empresaNome),
       arte,
       expiraEm: new Date(Date.now() + VALIDADE_VAGA_DIAS * DIA_MS),
@@ -83,7 +85,7 @@ export async function editarVaga(db: Banco, empresaId: string, vagaId: string, d
   if (!c || !e) return false;
   const r = await db
     .update(vagas)
-    .set({ titulo: d.titulo, area: d.area, contrato: d.contrato, modalidade: d.modalidade, cidadeSlug: c.slug, cidade: c.nome, uf: c.uf, pais: c.pais, salarioCentavos: d.salarioCentavos, descricao: d.descricao, requisitos: d.requisitos, beneficios: d.beneficios, busca: camposBusca(d, c.nome, e.nome) })
+    .set({ titulo: d.titulo, area: d.area, contrato: d.contrato, modalidade: d.modalidade, cidadeSlug: c.slug, cidade: c.nome, uf: c.uf, pais: c.pais, salarioCentavos: d.salarioCentavos, descricao: d.descricao, requisitos: d.requisitos, beneficios: d.beneficios, tags: d.tags ?? [], busca: camposBusca(d, c.nome, e.nome) })
     .where(and(eq(vagas.id, vagaId), eq(vagas.empresaId, empresaId)))
     .returning({ id: vagas.id });
   return r.length > 0;
@@ -127,7 +129,7 @@ export type VagaPublica = NonNullable<Awaited<ReturnType<typeof vagaPublica>>>;
 
 const colunasVaga = {
   id: vagas.id, slug: vagas.slug, titulo: vagas.titulo, area: vagas.area, contrato: vagas.contrato, modalidade: vagas.modalidade, cidadeSlug: vagas.cidadeSlug, cidade: vagas.cidade, uf: vagas.uf, pais: vagas.pais, moeda: vagas.moeda,
-  salarioCentavos: vagas.salarioCentavos, descricao: vagas.descricao, requisitos: vagas.requisitos, beneficios: vagas.beneficios, estado: vagas.estado, destaque: vagas.destaque, arte: vagas.arte, publicadaEm: vagas.publicadaEm, expiraEm: vagas.expiraEm,
+  salarioCentavos: vagas.salarioCentavos, descricao: vagas.descricao, requisitos: vagas.requisitos, beneficios: vagas.beneficios, tags: vagas.tags, estado: vagas.estado, destaque: vagas.destaque, arte: vagas.arte, publicadaEm: vagas.publicadaEm, expiraEm: vagas.expiraEm,
   temImagem: sql<boolean>`${vagas.imagem} is not null`, empresaId: empresas.id, empresaNome: empresas.nome, empresaSlug: empresas.slug, empresaDescricao: empresas.descricao, temLogo: sql<boolean>`${empresas.logo} is not null`, verificada: sql<boolean>`${usuarios.emailConfirmadoEm} is not null`,
 };
 
@@ -143,7 +145,7 @@ export async function vagaDaEmpresa(db: Banco, empresaId: string, vagaId: string
 
 export const vagaAceitaCandidatura = (v: { estado: string; expiraEm: Date }, agora = new Date()) => v.estado === 'aberta' && v.expiraEm > agora;
 
-export type Filtros = { q?: string; cidade?: string; contrato?: string; modalidade?: string; area?: string; empresaId?: string; pagina?: number };
+export type Filtros = { q?: string; cidade?: string; contrato?: string; modalidade?: string; area?: string; tag?: string; empresaId?: string; pagina?: number };
 
 const escaparLike = (t: string) => t.replace(/[\\%_]/g, '\\$&');
 
@@ -158,6 +160,7 @@ export function condicoesBusca(f: Filtros, agora = new Date()) {
     f.contrato ? eq(vagas.contrato, f.contrato) : undefined,
     f.modalidade ? eq(vagas.modalidade, f.modalidade) : undefined,
     f.area ? eq(vagas.area, f.area) : undefined,
+    f.tag ? sql`${vagas.tags} @> ${JSON.stringify([f.tag])}::jsonb` : undefined,
     f.empresaId ? eq(vagas.empresaId, f.empresaId) : undefined,
   );
 }

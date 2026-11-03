@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Empresa' };
 
 export default async function Empresa() {
   const u = await exigirContratante();
-  const [e] = await (await banco()).select({ id: empresas.id, nome: empresas.nome, descricao: empresas.descricao, slug: empresas.slug, perfil: empresas.perfil, temLogo: sql<boolean>`${empresas.logo} is not null` }).from(empresas).where(eq(empresas.id, u.empresaId));
+  const [e] = await (await banco()).select({ id: empresas.id, nome: empresas.nome, descricao: empresas.descricao, slug: empresas.slug, perfil: empresas.perfil, temLogo: sql<boolean>`${empresas.logo} is not null`, temCapa: sql<boolean>`${empresas.capa} is not null` }).from(empresas).where(eq(empresas.id, u.empresaId));
   return (
     <div className="pilha" style={{ maxWidth: 860 }}>
       <div>

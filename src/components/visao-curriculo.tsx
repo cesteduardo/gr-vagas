@@ -5,7 +5,7 @@ import { formatarTelefone } from '@/lib/forms/validators';
 const dataBr = (iso?: string) => (iso ? iso.split('-').reverse().join('/') : '');
 
 // O currículo no formato de sempre: dados pessoais, idiomas, formação e experiência.
-export function VisaoCurriculo({ nome, email, telefone, titulo, cidadeSlug, resumo, cv }: { nome: string; email: string; telefone: string; titulo: string; cidadeSlug: string; resumo: string; cv: Cv }) {
+export function VisaoCurriculo({ nome, email, telefone, titulo, cidadeSlug, resumo, cv, foto }: { nome: string; email: string; telefone: string; titulo: string; cidadeSlug: string; resumo: string; cv: Cv; foto?: string | null }) {
   const cidade = cidadePorSlug(cidadeSlug);
   let n = 0;
   const secao = (t: string) => `${(n += 1)}. ${t}`;
@@ -19,10 +19,13 @@ export function VisaoCurriculo({ nome, email, telefone, titulo, cidadeSlug, resu
   ].filter(([, v]) => v);
   return (
     <article className="cv">
-      <header>
-        <h2>{nome}</h2>
-        {titulo ? <p className="cv-cargo">{titulo}</p> : null}
-        {cv.objetivo ? <p className="cv-contato">{cv.objetivo}</p> : null}
+      <header className={foto ? 'cv-topo' : undefined}>
+        {foto ? <img className="cv-foto" src={foto} alt={`Foto de ${nome}`} width={96} height={96} /> : null}
+        <div>
+          <h2>{nome}</h2>
+          {titulo ? <p className="cv-cargo">{titulo}</p> : null}
+          {cv.objetivo ? <p className="cv-contato">{cv.objetivo}</p> : null}
+        </div>
       </header>
       <section>
         <h3>{secao('Dados pessoais')}</h3>

@@ -26,7 +26,7 @@ const texto = (f: FormData, n: string) => String(f.get(n) ?? '');
 
 
 
-const camposVaga = (f: FormData): CamposVaga => ({ titulo: texto(f, 'titulo'), area: texto(f, 'area'), contrato: texto(f, 'contrato'), modalidade: texto(f, 'modalidade'), cidade: texto(f, 'cidade'), salarioTipo: texto(f, 'salarioTipo'), salario: texto(f, 'salario'), descricao: texto(f, 'descricao'), requisitos: texto(f, 'requisitos'), beneficios: texto(f, 'beneficios') });
+const camposVaga = (f: FormData): CamposVaga => ({ titulo: texto(f, 'titulo'), area: texto(f, 'area'), contrato: texto(f, 'contrato'), modalidade: texto(f, 'modalidade'), cidade: texto(f, 'cidade'), salarioTipo: texto(f, 'salarioTipo'), salario: texto(f, 'salario'), descricao: texto(f, 'descricao'), requisitos: texto(f, 'requisitos'), beneficios: texto(f, 'beneficios'), tags: f.getAll('tags').map(String) });
 
 // Envia o link de acesso. Em demonstração ele também volta para a tela, sem e-mail de verdade.
 async function mandarLink(email: string, destino: string, assunto: string, confirmaSenha = false): Promise<{ limite: boolean; link?: string; falhou?: boolean }> {

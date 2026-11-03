@@ -18,14 +18,14 @@ import { guardarImagemVaga, publicarSemConta, publicarVaga, salvarArte } from '@
 export const CONTAS_TESTE = { empresa: 'empresa@teste.com', candidato: 'candidato@teste.com', senha: 'teste1234' };
 
 const EXEMPLOS = [
-  ['Auxiliar administrativo', 'Administrativo', 'Escritório Modelo (exemplo)', 'CLT', 'Presencial', 'sao-jose-do-rio-preto', 220000],
-  ['Técnico de enfermagem', 'Saúde', 'Clínica Modelo (exemplo)', 'CLT', 'Presencial', 'sao-jose-do-rio-preto', 280000],
-  ['Vendedor de loja', 'Comércio e varejo', 'Loja Modelo (exemplo)', 'CLT', 'Presencial', 'mirassol', null],
-  ['Motorista de entregas', 'Logística e transporte', 'Transportes Modelo (exemplo)', 'Temporário', 'Presencial', 'bady-bassitt', 260000],
-  ['Designer gráfico', 'Marketing e comunicação', 'Agência Modelo (exemplo)', 'PJ', 'Remoto', 'sao-jose-do-rio-preto', null],
-  ['Estagiário de recursos humanos', 'Recursos humanos', 'Indústria Modelo (exemplo)', 'Estágio', 'Híbrido', 'catanduva', 140000],
-  ['Recepcionista', 'Atendimento e vendas', 'Consultório Modelo (exemplo)', 'CLT', 'Presencial', 'sao-jose-do-rio-preto', 210000],
-  ['Auxiliar de cozinha', 'Restaurantes e alimentação', 'Restaurante Modelo (exemplo)', 'CLT', 'Presencial', 'cedral', 190000],
+  ['Auxiliar administrativo', 'Administrativo', 'Escritório Modelo (exemplo)', 'CLT', 'Presencial', 'sao-jose-do-rio-preto', 220000, ['inicio-imediato', 'fins-de-semana-livres']],
+  ['Técnico de enfermagem', 'Saúde', 'Clínica Modelo (exemplo)', 'CLT', 'Presencial', 'sao-jose-do-rio-preto', 280000, ['escala-12x36', 'turno-noite']],
+  ['Vendedor de loja', 'Comércio e varejo', 'Loja Modelo (exemplo)', 'CLT', 'Presencial', 'mirassol', null, ['primeiro-emprego', 'sem-experiencia']],
+  ['Motorista de entregas', 'Logística e transporte', 'Transportes Modelo (exemplo)', 'Temporário', 'Presencial', 'bady-bassitt', 260000, ['inicio-imediato']],
+  ['Designer gráfico', 'Marketing e comunicação', 'Agência Modelo (exemplo)', 'PJ', 'Remoto', 'sao-jose-do-rio-preto', null, ['meio-periodo']],
+  ['Estagiário de recursos humanos', 'Recursos humanos', 'Indústria Modelo (exemplo)', 'Estágio', 'Híbrido', 'catanduva', 140000, ['primeiro-emprego', 'meio-periodo']],
+  ['Recepcionista', 'Atendimento e vendas', 'Consultório Modelo (exemplo)', 'CLT', 'Presencial', 'sao-jose-do-rio-preto', 210000, ['fins-de-semana-livres', 'pcd']],
+  ['Auxiliar de cozinha', 'Restaurantes e alimentação', 'Restaurante Modelo (exemplo)', 'CLT', 'Presencial', 'cedral', 190000, ['sem-experiencia', 'mais-50']],
 ] as const;
 
 // Só existe em modo de demonstração. Em produção responde 404: nenhuma vaga falsa vai ao ar.
@@ -33,14 +33,14 @@ export async function POST() {
   if (!SIMULADOR) return new Response(null, { status: 404 });
   const db = await banco();
   let criadas = 0;
-  for (const [i, [titulo, area, empresa, contrato, modalidade, cidadeSlug, salarioCentavos]] of EXEMPLOS.entries()) {
+  for (const [i, [titulo, area, empresa, contrato, modalidade, cidadeSlug, salarioCentavos, tags]] of EXEMPLOS.entries()) {
     const email = `exemplo${i + 1}@exemplo.invalid`;
     const r = await publicarSemConta(db, {
       nome: 'Pessoa Exemplo',
       email,
       telefone: '17999999999',
       empresa,
-      vaga: { titulo, area, contrato, modalidade, cidadeSlug, salarioCentavos, descricao: 'Vaga fictícia, criada só para demonstrar o site. Esta empresa e esta vaga não existem.', requisitos: 'Vaga de demonstração', beneficios: 'Vaga de demonstração' },
+      vaga: { titulo, area, contrato, modalidade, cidadeSlug, salarioCentavos, tags: [...tags], descricao: 'Vaga fictícia, criada só para demonstrar o site. Esta empresa e esta vaga não existem.', requisitos: 'Vaga de demonstração', beneficios: 'Vaga de demonstração' },
     });
     if (r.ok) {
       criadas += 1;
@@ -82,8 +82,8 @@ async function contasDeTeste(db: Db) {
   await db.update(empresas).set({ logo: readFileSync(join(pasta, 'logo.png')), logoMime: 'image/png', descricao: 'Empresa fictícia, criada só para testar o GR Vagas. Loja de roupas e acessórios no centro de Rio Preto.', perfil: { setor: 'Comércio e varejo', tamanho: '11 a 50 pessoas', fundacao: '2015', porQue: 'Equipe pequena, horários combinados e espaço para crescer.', cidadeSlug: 'sao-jose-do-rio-preto', endereco: 'Rua Exemplo, 100, Centro', site: 'empresateste.com.br', instagram: 'empresateste', whatsapp: '17999990001', razaoSocial: 'Empresa Teste Ltda.', cnpj: '11222333000181' } }).where(eq(empresas.id, e!.id));
   await aplicarEvento(db, { id: 'teste-empresa', usuarioId: emp, plano: 'profissional', tipo: 'pago', fimEm: new Date(Date.now() + MES) });
 
-  const v1 = await publicarVaga(db, emp, e!.id, { titulo: 'Atendente de loja', area: 'Atendimento e vendas', contrato: 'CLT', modalidade: 'Presencial', cidadeSlug: 'sao-jose-do-rio-preto', salarioCentavos: 210000, descricao: 'Vaga de teste: atender clientes, organizar a loja e operar o caixa.', requisitos: 'Ensino médio completo\nGostar de atender pessoas', beneficios: 'Vale-transporte\nVale-refeição\nComissão' });
-  const v2 = await publicarVaga(db, emp, e!.id, { titulo: 'Auxiliar de estoque', area: 'Logística e transporte', contrato: 'CLT', modalidade: 'Presencial', cidadeSlug: 'mirassol', salarioCentavos: 195000, descricao: 'Vaga de teste: receber mercadorias, organizar o estoque e separar pedidos.', requisitos: 'Organização\nDisponibilidade de horário', beneficios: 'Vale-transporte\nCesta básica' });
+  const v1 = await publicarVaga(db, emp, e!.id, { titulo: 'Atendente de loja', tags: ['primeiro-emprego', 'inicio-imediato'], area: 'Atendimento e vendas', contrato: 'CLT', modalidade: 'Presencial', cidadeSlug: 'sao-jose-do-rio-preto', salarioCentavos: 210000, descricao: 'Vaga de teste: atender clientes, organizar a loja e operar o caixa.', requisitos: 'Ensino médio completo\nGostar de atender pessoas', beneficios: 'Vale-transporte\nVale-refeição\nComissão' });
+  const v2 = await publicarVaga(db, emp, e!.id, { titulo: 'Auxiliar de estoque', tags: ['sem-experiencia', 'fins-de-semana-livres'], area: 'Logística e transporte', contrato: 'CLT', modalidade: 'Presencial', cidadeSlug: 'mirassol', salarioCentavos: 195000, descricao: 'Vaga de teste: receber mercadorias, organizar o estoque e separar pedidos.', requisitos: 'Organização\nDisponibilidade de horário', beneficios: 'Vale-transporte\nCesta básica' });
   if (!v1.ok || !v2.ok) return;
   await guardarImagemVaga(db, e!.id, v1.vagaId, readFileSync(join(pasta, 'foto.jpg')), 'image/jpeg');
   await salvarArte(db, e!.id, v1.vagaId, { modelo: 'poster', formato: 'feed', fundo: '#FFE7D9', destaque: '#F79C6B', texto: '#3B1F10', fonte: 'poppins', chamada: 'Estamos contratando', qr: 'vaga', qrEstilo: 'suave', whatsapp: '17999990001', destaques: ['Vale-transporte', 'Vale-refeição', 'Comissão'] });

@@ -14,7 +14,7 @@ import { buscarVagas } from '@/lib/vagas';
 type P = { params: Promise<{ slug: string }> };
 
 async function empresa(slug: string) {
-  const [e] = await (await banco()).select({ id: empresas.id, nome: empresas.nome, descricao: empresas.descricao, slug: empresas.slug, perfil: empresas.perfil, temLogo: sql<boolean>`${empresas.logo} is not null` }).from(empresas).where(eq(empresas.slug, slug));
+  const [e] = await (await banco()).select({ id: empresas.id, nome: empresas.nome, descricao: empresas.descricao, slug: empresas.slug, perfil: empresas.perfil, temLogo: sql<boolean>`${empresas.logo} is not null`, temCapa: sql<boolean>`${empresas.capa} is not null` }).from(empresas).where(eq(empresas.slug, slug));
   return e ?? null;
 }
 
@@ -36,7 +36,9 @@ export default async function PaginaEmpresa({ params }: P) {
       <main>
         <section className="heroi embrulho">
         <header className="empresa-topo">
-          {e.temLogo ? <img src={`/api/logo/${e.id}`} alt={`Logo de ${e.nome}`} width={88} height={88} /> : <span className="inicial grande">{e.nome.charAt(0).toUpperCase()}</span>}
+          {/* Capa da empresa ou, sem ela, um degradê azul do site; o logo fica por cima, na emenda */}
+          <div className="perfil-capa">{e.temCapa ? <img src={`/api/capa/${e.id}`} alt="" /> : null}</div>
+          {e.temLogo ? <img className="perfil-avatar" src={`/api/logo/${e.id}`} alt={`Logo de ${e.nome}`} width={128} height={128} /> : <span className="perfil-avatar perfil-avatar-inicial" aria-hidden="true">{e.nome.charAt(0).toUpperCase()}</span>}
           <div>
             <h1>{e.nome}</h1>
             <p className="leve">{[p.setor, cidade?.nome, p.tamanho, p.fundacao ? `desde ${p.fundacao}` : ''].filter(Boolean).join(', ')}</p>

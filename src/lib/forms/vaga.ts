@@ -1,10 +1,11 @@
 import { AREAS, cidadePorSlug, CONTRATOS, MODALIDADES } from '@/lib/config';
 import { revisarTexto } from '@/lib/moderacao';
 import { lerSalario } from '@/lib/texto';
+import { tagsValidas } from '@/lib/tags';
 import { normalizarTelefone, semVazios, validarEmail, validarNome, validarTelefone, type Erros } from './validators';
 
-export type CamposVaga = { titulo: string; area: string; contrato: string; modalidade: string; cidade: string; salarioTipo: string; salario: string; descricao: string; requisitos: string; beneficios: string };
-export type DadosVaga = { titulo: string; area: string; contrato: string; modalidade: string; cidadeSlug: string; salarioCentavos: number | null; descricao: string; requisitos: string; beneficios: string };
+export type CamposVaga = { titulo: string; area: string; contrato: string; modalidade: string; cidade: string; salarioTipo: string; salario: string; descricao: string; requisitos: string; beneficios: string; tags?: string[] };
+export type DadosVaga = { titulo: string; area: string; contrato: string; modalidade: string; cidadeSlug: string; salarioCentavos: number | null; descricao: string; requisitos: string; beneficios: string; tags?: string[] };
 
 const tamanho = (v: string, min: number, max: number, rotulo: string) => {
   const t = v.trim();
@@ -44,6 +45,7 @@ export function validarVaga(c: CamposVaga): { dados: DadosVaga | null; erros: Er
       descricao: c.descricao.trim(),
       requisitos: c.requisitos.trim(),
       beneficios: c.beneficios.trim(),
+      tags: tagsValidas(c.tags ?? []),
     },
     erros: {},
   };

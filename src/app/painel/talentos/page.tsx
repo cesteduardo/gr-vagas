@@ -36,7 +36,8 @@ export default async function Talentos({ searchParams }: { searchParams: Promise
       {lista.length ? (
         <ul className="cartoes">
           {lista.map((t) => (
-            <li key={t.id} className="cartao">
+            <li key={t.id} className="cartao cartao-pessoa">
+              {t.temFoto ? <img className="avatar" src={`/api/foto/${t.id}`} alt="" width={56} height={56} loading="lazy" /> : <span className="avatar avatar-inicial" aria-hidden="true">{t.nome.trim().charAt(0).toUpperCase()}</span>}
               <div>
                 <h2 style={{ fontSize: '1.35rem' }}>{t.nome}{t.plus ? <span className="etiqueta">Plus</span> : null}</h2>
                 <small>{t.titulo}{cidadePorSlug(t.cidadeSlug) ? `, ${cidadePorSlug(t.cidadeSlug)!.nome}` : ''}</small>

@@ -25,7 +25,7 @@ export default async function CurriculoPronto() {
       </div>
       {p.titulo ? null : <p className="aviso nao-imprimir">Preencha o <Link href="/candidato/perfil">perfil</Link> para o currículo ficar completo.</p>}
       <div className={plus ? undefined : 'cv-previa'} aria-hidden={plus ? undefined : true}>
-        <VisaoCurriculo nome={u.nome} email={u.email} telefone={u.telefone} titulo={p.titulo} cidadeSlug={p.cidadeSlug} resumo={p.resumo} cv={p.cv ?? {}} />
+        <VisaoCurriculo nome={u.nome} email={u.email} telefone={u.telefone} titulo={p.titulo} cidadeSlug={p.cidadeSlug} resumo={p.resumo} cv={p.cv ?? {}} foto={p.temFoto ? `/api/foto/${u.id}` : null} />
       </div>
     </div>
   );

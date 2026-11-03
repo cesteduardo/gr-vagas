@@ -13,8 +13,8 @@ export const MAX_CURRICULO = 3 * 1024 * 1024;
 const DIA_MS = 24 * 60 * 60 * 1000;
 
 export async function perfilDe(db: Banco, usuarioId: string) {
-  const [p] = await db.select({ titulo: perfis.titulo, cidadeSlug: perfis.cidadeSlug, resumo: perfis.resumo, curriculoNome: perfis.curriculoNome, aceiteTalentosEm: perfis.aceiteTalentosEm, cv: perfis.cv }).from(perfis).where(eq(perfis.usuarioId, usuarioId));
-  return p ?? { titulo: '', cidadeSlug: '', resumo: '', curriculoNome: null, aceiteTalentosEm: null, cv: {} as Cv };
+  const [p] = await db.select({ titulo: perfis.titulo, cidadeSlug: perfis.cidadeSlug, resumo: perfis.resumo, curriculoNome: perfis.curriculoNome, aceiteTalentosEm: perfis.aceiteTalentosEm, cv: perfis.cv, temFoto: sql<boolean>`${perfis.foto} is not null` }).from(perfis).where(eq(perfis.usuarioId, usuarioId));
+  return p ?? { titulo: '', cidadeSlug: '', resumo: '', curriculoNome: null, aceiteTalentosEm: null, cv: {} as Cv, temFoto: false };
 }
 
 export async function salvarPerfil(db: Banco, usuarioId: string, d: { titulo: string; cidadeSlug: string; resumo: string; aceiteTalentos: boolean; cv?: Cv }) {
@@ -52,6 +52,35 @@ export async function curriculoParaBaixar(db: Banco, solicitanteId: string, cand
   if (!p?.curriculo) return null;
   if (!pode && p.aceite && limites(await planoDe(db, solicitanteId)).talentos) pode = true;
   return pode ? { arquivo: p.curriculo, nome: p.nome ?? 'curriculo.pdf' } : null;
+}
+
+export const MAX_FOTO = 2 * 1024 * 1024;
+
+export async function salvarFoto(db: Banco, usuarioId: string, foto: Buffer | null, mime: string | null) {
+  await db
+    .insert(perfis)
+    .values({ usuarioId, foto, fotoMime: mime })
+    .onConflictDoUpdate({ target: perfis.usuarioId, set: { foto, fotoMime: mime, atualizadoEm: new Date() } });
+}
+
+// A foto segue a mesma regra do currículo: o próprio candidato, a empresa que recebeu candidatura
+// dele e, se ele aceitou aparecer no banco de talentos, a empresa com plano que inclui talentos.
+export async function fotoParaVer(db: Banco, solicitanteId: string, candidatoId: string) {
+  const [p] = await db.select({ foto: perfis.foto, mime: perfis.fotoMime, aceite: perfis.aceiteTalentosEm }).from(perfis).where(eq(perfis.usuarioId, candidatoId));
+  if (!p?.foto || !p.mime) return null;
+  let pode = solicitanteId === candidatoId;
+  if (!pode) {
+    const [c] = await db
+      .select({ id: candidaturas.id })
+      .from(candidaturas)
+      .innerJoin(vagas, eq(vagas.id, candidaturas.vagaId))
+      .innerJoin(empresas, eq(empresas.id, vagas.empresaId))
+      .where(and(eq(candidaturas.candidatoId, candidatoId), eq(empresas.donoId, solicitanteId)))
+      .limit(1);
+    pode = Boolean(c);
+  }
+  if (!pode && p.aceite && limites(await planoDe(db, solicitanteId)).talentos) pode = true;
+  return pode ? { foto: p.foto, mime: p.mime } : null;
 }
 
 export async function alternarSalva(db: Banco, usuarioId: string, vagaId: string): Promise<boolean> {
@@ -110,7 +139,7 @@ export async function enviarAlertas(db: Banco, agora = new Date(), enviar: Envia
 
 export async function buscarTalentos(db: Banco, f: { q?: string; cidade?: string }) {
   const lista = await db
-    .select({ id: usuarios.id, nome: usuarios.nome, email: usuarios.email, telefone: usuarios.telefone, titulo: perfis.titulo, resumo: perfis.resumo, cidadeSlug: perfis.cidadeSlug, temCurriculo: sql<boolean>`${perfis.curriculo} is not null`, plus: sql<boolean>`coalesce(${assinaturas.plano} = 'plus' and ${assinaturas.fimEm} > now(), false)` })
+    .select({ id: usuarios.id, nome: usuarios.nome, email: usuarios.email, telefone: usuarios.telefone, titulo: perfis.titulo, resumo: perfis.resumo, cidadeSlug: perfis.cidadeSlug, temCurriculo: sql<boolean>`${perfis.curriculo} is not null`, temFoto: sql<boolean>`${perfis.foto} is not null`, plus: sql<boolean>`coalesce(${assinaturas.plano} = 'plus' and ${assinaturas.fimEm} > now(), false)` })
     .from(perfis)
     .innerJoin(usuarios, eq(usuarios.id, perfis.usuarioId))
     .leftJoin(assinaturas, eq(assinaturas.usuarioId, perfis.usuarioId))

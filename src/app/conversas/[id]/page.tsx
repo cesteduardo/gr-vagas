@@ -71,7 +71,7 @@ export default async function PaginaConversa({ params, searchParams }: { params:
         {perfilCandidato ? (
           <details className="caixa-dobra cv-dobra">
             <summary>Ver o currículo completo de {a.candidatoNome.split(' ')[0]}</summary>
-            <VisaoCurriculo nome={a.candidatoNome} email={a.candidatoEmail} telefone={a.candidatoTelefone} titulo={perfilCandidato.titulo} cidadeSlug={perfilCandidato.cidadeSlug} resumo={perfilCandidato.resumo} cv={perfilCandidato.cv ?? {}} />
+            <VisaoCurriculo nome={a.candidatoNome} email={a.candidatoEmail} telefone={a.candidatoTelefone} titulo={perfilCandidato.titulo} cidadeSlug={perfilCandidato.cidadeSlug} resumo={perfilCandidato.resumo} cv={perfilCandidato.cv ?? {}} foto={perfilCandidato.temFoto ? `/api/foto/${a.candidatoId}` : null} />
           </details>
         ) : null}
       </main>

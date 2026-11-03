@@ -46,7 +46,10 @@ export async function PaginaBusca({ titulo, cinza, descricao, filtros, base, cid
         </form>
         <p className="nota" style={{ marginTop: 20, paddingLeft: 6 }} role="status">{total === 1 ? '1 vaga encontrada' : `${total} vagas encontradas`}</p>
         {itens.length ? (
-          <ListaVagas vagas={itens} />
+          <>
+            <h2 className="so-leitor">Resultados</h2>
+            <ListaVagas vagas={itens} />
+          </>
         ) : (
           <div className="vazio" style={{ marginTop: 16 }}>
             <h2 style={{ fontSize: '1.6rem' }}>{temFiltro ? 'Nenhuma vaga com esses filtros' : 'Ainda não há vagas aqui'}</h2>

@@ -11,7 +11,7 @@ import '@fontsource-variable/manrope/wght.css';
 import '@fontsource-variable/montserrat/wght.css';
 import '@fontsource-variable/nunito/wght.css';
 import '@fontsource-variable/playfair-display/wght.css';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { carregarFonte, desenharArte } from '@/lib/arte/desenhar';
 import type { DadosArte, OpcoesArte } from '@/lib/arte/layout';
 
@@ -34,8 +34,28 @@ function carregarImagem(url: string | null | undefined) {
 export function ArteCanvas({ dados, opcoes, logoUrl, imagemUrl, rotulo, aoDesenhar }: { dados: DadosCanvas; opcoes: OpcoesCanvas; logoUrl?: string | null; imagemUrl?: string | null; rotulo: string; aoDesenhar?: (c: HTMLCanvasElement) => void }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const chave = JSON.stringify([dados, opcoes, logoUrl, imagemUrl]);
+  const [perto, setPerto] = useState(false);
+
+  // Cada arte é desenhada em 1080 px, com QR Code: só desenha quando chega perto da tela.
+  // Sem isso, as páginas com carrossel de artes travavam ao abrir no celular.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setPerto(true);
+      return;
+    }
+    const obs = new IntersectionObserver((e) => {
+      if (e.some((x) => x.isIntersecting)) {
+        setPerto(true);
+        obs.disconnect();
+      }
+    }, { rootMargin: '200px 0px' });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
+    if (!perto) return;
     let vivo = true;
     (async () => {
       const [, logo, imagem] = await Promise.all([carregarFonte(opcoes.fonte), carregarImagem(logoUrl), carregarImagem(imagemUrl)]);
@@ -48,7 +68,7 @@ export function ArteCanvas({ dados, opcoes, logoUrl, imagemUrl, rotulo, aoDesenh
     };
     // A chave resume dados, opções e imagens.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chave]);
+  }, [chave, perto]);
 
   return <canvas ref={ref} width={1080} height={1080} role="img" aria-label={rotulo} data-arte="" />;
 }

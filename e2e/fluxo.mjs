@@ -413,6 +413,14 @@ if (process.env.ADMIN) {
   await criarEmpresa(adm, process.env.ADMIN, 'Moderação').catch(() => {});
   if (adm.url().includes('/painel')) {
     await adm.goto('/admin');
+    ok(!adm.url().includes('/admin'), 'admin exige e-mail confirmado');
+    await adm.goto('/painel');
+    await adm.getByRole('button', { name: 'Enviar link de confirmação' }).click();
+    await adm.waitForSelector('text=abrir o link de acesso');
+    await adm.goto(await adm.getByRole('link', { name: 'abrir o link de acesso' }).getAttribute('href'));
+    await adm.getByRole('button', { name: 'Entrar na minha conta' }).click();
+    await adm.waitForURL('**/painel**');
+    await adm.goto('/admin');
     ok((await adm.getByText('Pediram dinheiro para a entrevista').count()) >= 1, 'moderação vê a denúncia');
     await adm.locator('.cartao', { hasText: 'Pediram dinheiro' }).first().getByRole('button', { name: 'Arquivar' }).click();
     await adm.waitForTimeout(500);

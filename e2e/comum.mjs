@@ -1,13 +1,24 @@
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { chromium } from 'playwright-core';
 
 export const BASE = process.env.BASE ?? 'http://localhost:4820';
+// Procura o Chromium do Playwright: CHROMIUM, depois as pastas de instalação conhecidas.
+function acharChromium() {
+  if (process.env.CHROMIUM && existsSync(process.env.CHROMIUM)) return process.env.CHROMIUM;
+  const pastas = [process.env.PLAYWRIGHT_BROWSERS_PATH, join(homedir(), '.cache/ms-playwright'), '/opt/pw-browsers'].filter(Boolean);
+  for (const base of pastas) {
+    if (!existsSync(base)) continue;
+    const pasta = readdirSync(base).filter((d) => /^chromium-\d+$/.test(d)).sort().at(-1);
+    const exe = pasta && join(base, pasta, 'chrome-linux64/chrome');
+    if (exe && existsSync(exe)) return exe;
+  }
+  return undefined;
+}
+
 export async function abrirNavegador() {
-  const cache = join(homedir(), '.cache/ms-playwright');
-  const pasta = readdirSync(cache).filter((d) => d.startsWith('chromium-')).sort().at(-1);
-  return chromium.launch({ executablePath: join(cache, pasta, 'chrome-linux64/chrome') });
+  return chromium.launch({ executablePath: acharChromium() });
 }
 
 // PDF de verdade, com texto, para testar a leitura do currículo.

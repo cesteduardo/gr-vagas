@@ -7,8 +7,8 @@
   --superficie-2: #e7edf6;
   --ink: #141a24;
   --ink-2: #4a5466;
-  --muted: #7a8496;
-  --titulo-2: #9aa4b4;
+  --muted: #5f697c;
+  --titulo-2: #828c9e;
   --line: #e3e8f0;
   --azul: #286fec;
   --azul-forte: #1c5bd4;
@@ -520,7 +520,9 @@ main.pagina .compor textarea { height: 50px; min-height: 50px; border-radius: 25
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
-  .faixa-artes, .carrossel, .letreiro { overflow-x: auto; }
+  /* Parado, o letreiro vira faixa de rolar: a barra volta para dar para chegar ao fim */
+  .letreiro { overflow-x: auto; scrollbar-width: thin; }
+  .letreiro::-webkit-scrollbar { display: block; }
 }
 
 /* Editor da arte: prévia fixa, uma coisa de cada vez ao lado */
@@ -574,29 +576,27 @@ input[type='time']::-webkit-calendar-picker-indicator:hover { background: var(--
 .arquivo input:focus-visible + label { outline: 2px solid var(--ceu-forte); outline-offset: 2px; }
 .arquivo-nome { flex: 1 1 120px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Barras de rolagem na cor da página: trilho do fundo e alça em pílula */
-/* Barras de rolagem: alça em pílula por dentro, sem setas.
-   No Chrome, scrollbar-color faz voltar a barra padrão com setas; por isso ela fica só para o Firefox. */
+/* Barras de rolagem: alça em pílula, sem setas, sempre visível onde a área rola.
+   Chrome, Edge e Safari usam ::-webkit-scrollbar; o Firefox, scrollbar-width e scrollbar-color.
+   No Chrome, scrollbar-color desliga o ::-webkit-scrollbar e volta a barra com setas, por isso fica só no Firefox. */
 html { scrollbar-gutter: stable; }
 ::-webkit-scrollbar { width: 12px; height: 12px; background: transparent; }
 ::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
 ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
-::-webkit-scrollbar-thumb { min-height: 44px; border: 3px solid transparent; border-radius: 999px; background: #c9d2df; background-clip: padding-box; }
-::-webkit-scrollbar-thumb:hover { background-color: #a9b5c7; }
-::-webkit-scrollbar-thumb:active { background-color: var(--azul); }
-/* Listas, áreas de texto, conversa, menu e pop-ups: a alça só aparece com o mouse em cima */
-:is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo)::-webkit-scrollbar { width: 10px; }
-:is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo)::-webkit-scrollbar-track { margin: 12px 0; }
-:is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo)::-webkit-scrollbar-thumb { background-color: transparent; }
-:is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo):hover::-webkit-scrollbar-thumb { background-color: #c9d2df; }
-:is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo):hover::-webkit-scrollbar-thumb:hover { background-color: #a9b5c7; }
+::-webkit-scrollbar-thumb { min-width: 48px; min-height: 48px; border: 3px solid transparent; border-radius: 999px; background-color: #a7b1c0; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { border-width: 2px; background-color: #838ea1; }
+::-webkit-scrollbar-thumb:active { border-width: 2px; background-color: #6c788c; }
+/* Caixas arredondadas: a alça não encosta nos cantos */
+:is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo)::-webkit-scrollbar-track { margin-block: 14px; }
 @supports (-moz-appearance: none) {
-  html { scrollbar-width: thin; scrollbar-color: #c9d2df transparent; }
-  :is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo) { scrollbar-width: thin; scrollbar-color: transparent transparent; transition: scrollbar-color .2s; }
-  :is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo):hover { scrollbar-color: #c9d2df transparent; }
+  :is(html, .selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo) { scrollbar-width: thin; scrollbar-color: #a7b1c0 transparent; }
 }
-.rapidas, .faixa-artes, .carrossel, .letreiro, .linha-do-dia { scrollbar-width: none; }
-.rapidas::-webkit-scrollbar, .faixa-artes::-webkit-scrollbar, .carrossel::-webkit-scrollbar, .letreiro::-webkit-scrollbar { display: none; }
+/* Sem barra só onde há outro jeito de andar: setas do carrossel, roleta da hora e letreiro em movimento */
+.letreiro, .linha-do-dia { scrollbar-width: none; }
+.letreiro::-webkit-scrollbar { display: none; }
+/* Respostas rápidas: no toque, deslizam para o lado; com mouse, quebram linha e ficam todas à mão */
+.rapidas::-webkit-scrollbar { display: none; }
+@media (pointer: fine) { .rapidas { flex-wrap: wrap; overflow-x: visible; } }
 .selecao .so-leitor { pointer-events: none; }
 
 /* Cargo e botão da porta de quem contrata: uma pílula só, de altura fixa. */

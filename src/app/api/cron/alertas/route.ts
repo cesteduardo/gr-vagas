@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { limparVencidos } from '@/lib/auth/contas';
 import { banco } from '@/lib/db/client';
 import { enviarAlertas } from '@/lib/perfis';
 
@@ -6,5 +7,7 @@ import { enviarAlertas } from '@/lib/perfis';
 export async function POST(req: Request) {
   const segredo = process.env.CRON_SEGREDO;
   if (!segredo || req.headers.get('authorization') !== `Bearer ${segredo}`) return NextResponse.json({ erro: 'Não autorizado.' }, { status: 401 });
-  return NextResponse.json({ enviados: await enviarAlertas(await banco()) });
+  const db = await banco();
+  await limparVencidos(db);
+  return NextResponse.json({ enviados: await enviarAlertas(db) });
 }

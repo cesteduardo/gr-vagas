@@ -9,15 +9,16 @@ export function iaDisponivel(): ChamarIa | null {
   return async ({ sistema, conteudo, esquema }) => {
     try {
       const r = await client.beta.messages.create({
-        model: process.env.TOPA_MODELO_IA ?? 'claude-opus-5-5',
-        max_tokens: 4000,
+        model: process.env.MODELO_IA_VAGAS || 'claude-opus-5-5',
+        // O raciocínio do modelo conta neste teto: com folga, o JSON não sai cortado.
+        max_tokens: 16000,
         betas: ['server-side-fallback-2026-07-01'],
         fallbacks: 'default',
         system: sistema,
         output_config: { effort: 'low', format: { type: 'json_schema', schema: esquema } },
         messages: [{ role: 'user', content: conteudo }],
       } as Anthropic.Beta.MessageCreateParamsNonStreaming);
-      if (r.stop_reason === 'refusal') return null;
+      if (r.stop_reason === 'refusal' || r.stop_reason === 'max_tokens') return null;
       const bloco = r.content.find((b) => b.type === 'text');
       return bloco && bloco.type === 'text' ? JSON.parse(bloco.text) : null;
     } catch (e) {

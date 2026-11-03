@@ -1,0 +1,1 @@
+ALTER TABLE "empresas" ADD COLUMN "perfil" jsonb DEFAULT '{}'::jsonb NOT NULL;

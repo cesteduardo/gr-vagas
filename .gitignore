@@ -1,0 +1,13 @@
+node_modules/
+auth/
+*.jsonl
+.env
+.env.*
+qr.png
+.chave-hmac
+.next/
+next-env.d.ts
+.data/
+*.tsbuildinfo
+e2e/saida/
+!.env.example

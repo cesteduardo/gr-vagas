@@ -1,0 +1,58 @@
+// Conferência no Firefox do sistema. Digita tecla por tecla: o preenchimento direto
+// do robô no Firefox passa por cima do React e não representa uma pessoa digitando.
+// Uso: BASE=http://localhost:4830 node e2e/firefox.mjs
+import { firefox } from 'playwright-core';
+import { resolve } from 'node:path';
+const O = process.env.SAIDA ?? 'e2e/saida', B = process.env.BASE ?? 'http://localhost:4820';
+import { mkdirSync } from 'node:fs';
+import { escolherHora } from './comum.mjs';
+mkdirSync(O, { recursive: true });
+const b = await firefox.launch({ channel: 'moz-firefox', executablePath: '/usr/bin/firefox' });
+const p = await b.newPage({ viewport: { width: 1366, height: 900 } });
+const erros = [];
+p.on('console', (m) => { if (m.type() === 'error') erros.push('console: ' + m.text()); });
+p.on('pageerror', (e) => erros.push(e.message));
+const ok = (c, n) => console.log(`${c ? 'ok   ' : 'FALHA'} ${n}`);
+await p.goto(B + '/'); await p.waitForTimeout(1200); await p.screenshot({ path: `${O}/ff-home.png` });
+await p.goto(B + '/anunciantes'); await p.waitForTimeout(1500); await p.screenshot({ path: `${O}/ff-anun.png` });
+await p.goto(B + '/criar-conta?tipo=contratante');
+await p.waitForLoadState('networkidle');
+await p.locator('input[name=empresa]').pressSequentially('Restaurante Sabor');
+await p.locator('input[name=nome]').pressSequentially('Ana Souza');
+await p.locator('input[name=email]').pressSequentially(`ff${Date.now()}@teste.com.br`);
+await p.locator('input[name=telefone]').pressSequentially('17999999999');
+await p.locator('input[name=senha]').pressSequentially('senhaforte123');
+await p.getByRole('button', { name: 'Criar conta da empresa' }).click();
+await p.waitForURL('**/painel**');
+ok(true, 'conta da empresa criada no Firefox');
+await p.goto(B + '/publicar');
+await p.waitForLoadState('networkidle');
+await p.waitForTimeout(800);
+await p.locator('input[name=titulo]').pressSequentially('Auxiliar de Cozinha');
+await p.locator('.selecao-botao').first().click();
+await p.locator('.selecao-lista li', { hasText: 'Restaurantes' }).click();
+ok((await p.locator('select[name=area]').inputValue()) === 'Restaurantes e alimentação', 'menu de seleção no Firefox');
+await p.locator('textarea[name=descricao]').pressSequentially('Preparar alimentos, organizar a cozinha e manter tudo limpo.');
+await p.locator('textarea[name=requisitos]').pressSequentially('Experiência em cozinha');
+await p.locator('textarea[name=beneficios]').pressSequentially('Vale-transporte\nRefeição no local');
+await p.getByRole('button', { name: 'Publicar e gerar a arte' }).click();
+await p.waitForURL('**/painel/vagas/**');
+await p.waitForTimeout(1500);
+const link = await p.locator('#link-vaga').inputValue();
+await p.addScriptTag({ path: resolve('node_modules/jsqr/dist/jsQR.js') });
+const qr = await p.evaluate(() => { const c = document.querySelector('.editor-previa canvas'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height); return window.jsQR(d.data, d.width, d.height)?.data ?? null; });
+ok(qr === link, 'QR Code da arte lido no Firefox');
+await p.locator('.editor-previa canvas').screenshot({ path: `${O}/ff-arte.png` });
+const abrir = async (t) => { const d = p.locator(`details[data-ajuste="${t}"]`); if ((await d.getAttribute('open')) === null) await d.locator('summary').click(); };
+await abrir('Texto e fonte');
+for (const f of ['Playfair Display', 'Times New Roman', 'Poppins']) { await p.getByRole('button', { name: f, exact: true }).click(); await p.waitForTimeout(600); await p.locator('.editor-previa canvas').screenshot({ path: `${O}/ff-fonte-${f}.png` }); }
+await abrir('Cores próprias');
+await p.getByRole('button', { name: /^Fundo:/ }).click();
+await p.waitForTimeout(300);
+await p.screenshot({ path: `${O}/ff-cor.png` });
+await p.goto(B + '/calculos/volta-do-almoco');
+await escolherHora(p, 0, '12:03');
+ok((await p.locator('[data-resultado=volta]').innerText()) === '13:03', 'volta do almoço no Firefox');
+await p.screenshot({ path: `${O}/ff-almoco.png` });
+ok(!erros.length, `sem erro de JS${erros.length ? ': ' + erros[0] : ''}`);
+await b.close();

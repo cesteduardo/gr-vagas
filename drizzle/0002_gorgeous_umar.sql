@@ -1,0 +1,1 @@
+ALTER TABLE "perfis" ADD COLUMN "cv" jsonb DEFAULT '{}'::jsonb NOT NULL;

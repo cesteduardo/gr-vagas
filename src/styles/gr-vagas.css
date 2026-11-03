@@ -92,7 +92,7 @@ h1 em, h2 em { font-style: normal; color: var(--titulo-2); }
 /* Marca */
 .simbolo { flex: none; }
 .palavra { color: var(--ink); font-weight: 600; letter-spacing: -.035em; }
-.palavra i { color: var(--laranja-escuro); font-style: normal; }
+.palavra i { color: var(--azul); font-style: normal; }
 .marca { flex: none; display: inline-flex; align-items: center; gap: 9px; font-size: 20px; line-height: 1; text-decoration: none; }
 
 /* Ilha */

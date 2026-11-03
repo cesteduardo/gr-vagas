@@ -212,7 +212,9 @@ h1 em, h2 em { font-style: normal; color: var(--titulo-2); }
 .vaga-cartao-topo { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 14px; font-weight: 500; }
 .vaga-cartao-topo img { width: 44px; height: 44px; object-fit: contain; border-radius: 50%; background: var(--branco); }
 .vaga-cartao-empresa { min-width: 0; color: var(--ink-2); line-height: 1.25; }
-.inicial { display: inline-grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--branco); color: var(--ink); font-weight: 600; }
+.inicial { display: inline-grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; color: var(--ink); font-weight: 600; }
+/* Fundo branco só como padrão: com :where não tem peso e os tons .tom-* valem (antes a inicial ficava branca no branco) */
+:where(.inicial) { background: var(--branco); }
 .vaga-cartao strong { flex: 1; font-size: clamp(23px, 2.2vw, 29px); font-weight: 600; line-height: 1.08; letter-spacing: -.035em; }
 .vaga-cartao-pe { display: flex; justify-content: space-between; align-items: end; gap: 12px; color: var(--ink-2); font-size: 13px; line-height: 1.35; }
 .vaga-cartao-pe b { flex: none; color: var(--ink); font-size: 14px; font-weight: 600; }

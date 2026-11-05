@@ -927,6 +927,14 @@ html:has(.heroi) { background: #fff linear-gradient(180deg, #2a6deb 0, #3a7bef 2
 .empresa-topo > div:last-child { margin-top: 18px; }
 .heroi .empresa-topo h1 { color: var(--ink); font-size: clamp(36px, 4.6vw, 60px); }
 .empresa-topo p { margin-top: 8px; color: var(--ink-2); }
+.empresa-acoes { margin-top: 22px; }
+.icone-botao { flex: none; width: 18px; height: 18px; margin-left: -4px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* Sobre a empresa: "Quem somos" e "Por que trabalhar aqui" num cartão só, separados por uma linha. */
+.empresa-sobre { display: grid; gap: 22px; }
+.empresa-sobre > div + div { padding-top: 22px; border-top: 1px solid var(--line); }
+.empresa-sobre h2 { margin-bottom: 8px; font-size: clamp(20px, 1.8vw, 24px); letter-spacing: -.03em; }
+.empresa-sobre p { max-width: 68ch; color: var(--ink-2); white-space: pre-line; }
+#vagas { scroll-margin-top: 110px; }
 /* Foto do candidato: aro branco com um fio, sem capa */
 .perfil-foto { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 26px; }
 .perfil-foto .perfil-avatar { --tam: 104px; box-shadow: 0 0 0 4px var(--branco), 0 0 0 5px var(--line), 0 14px 28px -16px rgb(13 27 62 / .3); }

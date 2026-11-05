@@ -69,7 +69,7 @@ export default async function VagaPainel({ params, searchParams }: { params: Pro
           <li key={c.id} className="cartao">
             <div>
               <h2 style={{ fontSize: '1.35rem' }}><Link href={`/conversas/${c.id}`} style={{ color: 'inherit' }}>{c.nome}</Link>{c.plus ? <span className="etiqueta etiqueta-neutra">Plus</span> : null}{c.naoLidas ? <span className="etiqueta etiqueta-erro">{c.naoLidas === 1 ? '1 não lida' : `${c.naoLidas} não lidas`}</span> : null}</h2>
-              <small>{c.titulo ? `${c.titulo}. ` : ''}Candidatura em {formatarData(c.criadaEm)}.{c.temCurriculo ? ' Com currículo.' : ''}</small>
+              <small>{c.titulo ? `${c.titulo}. ` : ''}Candidatura em {formatarData(c.criadaEm)}.{c.temCurriculo ? ' Com currículo.' : ''} <Link href={`/candidatos/${c.candidatoId}`}>Ver perfil</Link></small>
             </div>
             <EnvioAuto action={acaoMudarEtapa}>
               <input type="hidden" name="candidaturaId" value={c.id} />

@@ -1045,3 +1045,21 @@ textarea { max-width: 100%; }
 .nao-lida .conversa-topo strong { font-weight: 700; }
 .nao-lida .conversa-topo time { color: var(--azul-forte); font-weight: 600; }
 .nao-lida .conversa-ultima > span:first-child { color: var(--ink); font-weight: 500; }
+
+/* Perfil do candidato para empresas: cabeçalho com foto e habilidades, seções em cartões e o contato ao lado. */
+.candidato-grade { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--gap); align-items: start; margin-top: 18px; }
+@media (max-width: 900px) { .candidato-grade { grid-template-columns: minmax(0, 1fr); } .candidato-contato { position: static; } }
+.candidato-topo { display: grid; justify-items: center; gap: 16px; text-align: center; }
+.candidato-topo h1 { font-size: clamp(30px, 3.4vw, 44px); letter-spacing: -.03em; }
+.candidato-topo p { margin-top: 4px; color: var(--ink-2); }
+.candidato-habilidades { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.candidato-habilidades .etiqueta { margin: 0; padding: 6px 12px; font-size: 13px; font-weight: 500; }
+.candidato-secao { display: grid; gap: 10px; }
+.candidato-secao h2 { font-size: clamp(20px, 1.8vw, 24px); letter-spacing: -.03em; }
+.candidato-secao p { color: var(--ink-2); white-space: pre-line; }
+.candidato-linha-tempo { display: grid; gap: 18px; margin: 0; padding: 0; list-style: none; }
+.candidato-linha-tempo li { display: grid; gap: 2px; padding-left: 18px; border-left: 2px solid var(--azul-claro); }
+.candidato-linha-tempo span { color: var(--muted); font-size: 14px; }
+.candidato-linha-tempo p { margin-top: 6px; font-size: 15px; }
+.candidato-contato { position: sticky; top: 100px; display: grid; gap: 12px; }
+.candidato-contato h2 { font-size: 22px; letter-spacing: -.03em; }

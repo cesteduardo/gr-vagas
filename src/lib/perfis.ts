@@ -14,13 +14,13 @@ export const MAX_CURRICULO = 3 * 1024 * 1024;
 const DIA_MS = 24 * 60 * 60 * 1000;
 
 export async function perfilDe(db: Banco, usuarioId: string) {
-  const [p] = await db.select({ titulo: perfis.titulo, cidadeSlug: perfis.cidadeSlug, resumo: perfis.resumo, curriculoNome: perfis.curriculoNome, aceiteTalentosEm: perfis.aceiteTalentosEm, cv: perfis.cv, temFoto: sql<boolean>`${perfis.foto} is not null` }).from(perfis).where(eq(perfis.usuarioId, usuarioId));
-  return p ?? { titulo: '', cidadeSlug: '', resumo: '', curriculoNome: null, aceiteTalentosEm: null, cv: {} as Cv, temFoto: false };
+  const [p] = await db.select({ titulo: perfis.titulo, cidadeSlug: perfis.cidadeSlug, resumo: perfis.resumo, curriculoNome: perfis.curriculoNome, aceiteTalentosEm: perfis.aceiteTalentosEm, cv: perfis.cv, visivelEmpresas: perfis.visivelEmpresas, temFoto: sql<boolean>`${perfis.foto} is not null` }).from(perfis).where(eq(perfis.usuarioId, usuarioId));
+  return p ?? { titulo: '', cidadeSlug: '', resumo: '', curriculoNome: null, aceiteTalentosEm: null, cv: {} as Cv, visivelEmpresas: true, temFoto: false };
 }
 
-export async function salvarPerfil(db: Banco, usuarioId: string, d: { titulo: string; cidadeSlug: string; resumo: string; aceiteTalentos: boolean; cv?: Cv }) {
+export async function salvarPerfil(db: Banco, usuarioId: string, d: { titulo: string; cidadeSlug: string; resumo: string; aceiteTalentos: boolean; cv?: Cv; visivelEmpresas?: boolean }) {
   const aceite = d.aceiteTalentos ? new Date() : null;
-  const valores = { titulo: d.titulo.trim(), cidadeSlug: d.cidadeSlug, resumo: d.resumo.trim(), atualizadoEm: new Date(), ...(d.cv ? { cv: cvValido(d.cv) } : {}) };
+  const valores = { titulo: d.titulo.trim(), cidadeSlug: d.cidadeSlug, resumo: d.resumo.trim(), atualizadoEm: new Date(), ...(d.cv ? { cv: cvValido(d.cv) } : {}), ...(d.visivelEmpresas === undefined ? {} : { visivelEmpresas: d.visivelEmpresas }) };
   await db
     .insert(perfis)
     .values({ usuarioId, ...valores, aceiteTalentosEm: aceite })
@@ -66,10 +66,56 @@ export async function salvarFoto(db: Banco, usuarioId: string, foto: Buffer | nu
 
 // A foto segue a mesma regra do currículo: o próprio candidato, a empresa que recebeu candidatura
 // dele e, se ele aceitou aparecer no banco de talentos, a empresa com plano que inclui talentos.
+async function ehEmpresa(db: Banco, usuarioId: string) {
+  const [u] = await db.select({ tipo: usuarios.tipo }).from(usuarios).where(eq(usuarios.id, usuarioId));
+  return u?.tipo === 'contratante';
+}
+
+async function empresaRecebeuCandidatura(db: Banco, donoId: string, candidatoId: string) {
+  return db
+    .select({ id: candidaturas.id, vaga: vagas.titulo })
+    .from(candidaturas)
+    .innerJoin(vagas, eq(vagas.id, candidaturas.vagaId))
+    .innerJoin(empresas, eq(empresas.id, vagas.empresaId))
+    .where(and(eq(candidaturas.candidatoId, candidatoId), eq(empresas.donoId, donoId)))
+    .orderBy(desc(candidaturas.criadaEm));
+}
+
+// Perfil do candidato visto por uma empresa com conta: o que ele sabe fazer, sem contato
+// nem dados pessoais. Quem escondeu o perfil só aparece para a empresa que recebeu a candidatura.
+export async function perfilParaEmpresa(db: Banco, solicitanteId: string, candidatoId: string) {
+  const proprio = solicitanteId === candidatoId;
+  if (!proprio && !(await ehEmpresa(db, solicitanteId))) return null;
+  const [p] = await db
+    .select({ nome: usuarios.nome, tipo: usuarios.tipo, titulo: perfis.titulo, cidadeSlug: perfis.cidadeSlug, resumo: perfis.resumo, cv: perfis.cv, visivel: perfis.visivelEmpresas, aceite: perfis.aceiteTalentosEm, temFoto: sql<boolean>`${perfis.foto} is not null` })
+    .from(perfis)
+    .innerJoin(usuarios, eq(usuarios.id, perfis.usuarioId))
+    .where(eq(perfis.usuarioId, candidatoId));
+  if (!p || p.tipo !== 'candidato') return null;
+  const conversas = proprio ? [] : await empresaRecebeuCandidatura(db, solicitanteId, candidatoId);
+  if (!proprio && !p.visivel && !conversas.length) return null;
+  const cv = p.cv ?? {};
+  const noBanco = !proprio && Boolean(p.aceite) && limites(await planoDe(db, solicitanteId)).talentos;
+  return {
+    nome: p.nome,
+    titulo: p.titulo,
+    cidadeSlug: p.cidadeSlug,
+    resumo: p.resumo,
+    temFoto: p.temFoto,
+    visivel: p.visivel,
+    // Só o profissional: nada de endereço, nascimento ou estado civil.
+    cv: { objetivo: cv.objetivo, habilidades: cv.habilidades ?? [], experiencias: cv.experiencias ?? [], formacao: cv.formacao ?? [], idiomas: cv.idiomas ?? [], portfolio: cv.portfolio } satisfies Cv,
+    conversas,
+    noBanco,
+  };
+}
+
 export async function fotoParaVer(db: Banco, solicitanteId: string, candidatoId: string) {
-  const [p] = await db.select({ foto: perfis.foto, mime: perfis.fotoMime, aceite: perfis.aceiteTalentosEm }).from(perfis).where(eq(perfis.usuarioId, candidatoId));
+  const [p] = await db.select({ foto: perfis.foto, mime: perfis.fotoMime, aceite: perfis.aceiteTalentosEm, visivel: perfis.visivelEmpresas }).from(perfis).where(eq(perfis.usuarioId, candidatoId));
   if (!p?.foto || !p.mime) return null;
   let pode = solicitanteId === candidatoId;
+  // A foto acompanha o perfil: qualquer empresa com conta, se o candidato não escondeu.
+  if (!pode && p.visivel) pode = await ehEmpresa(db, solicitanteId);
   if (!pode) {
     const [c] = await db
       .select({ id: candidaturas.id })

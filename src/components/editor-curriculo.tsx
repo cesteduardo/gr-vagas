@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { CampoArquivo } from './campo-arquivo';
 import { Selecao } from './selecao';
 
-type Inicial = { titulo: string; cidadeSlug: string; resumo: string; talentos: boolean; cv: Cv; curriculoNome: string | null; candidatoId: string };
+type Inicial = { titulo: string; cidadeSlug: string; resumo: string; talentos: boolean; visivel: boolean; cv: Cv; curriculoNome: string | null; candidatoId: string };
 
 const mascaraData = (v: string) => {
   const d = v.replace(/\D/g, '').slice(0, 8);
@@ -35,6 +35,7 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
   const [cidade, setCidade] = useState(inicial.cidadeSlug);
   const [resumo, setResumo] = useState(inicial.resumo);
   const [talentos, setTalentos] = useState(inicial.talentos);
+  const [visivel, setVisivel] = useState(inicial.visivel);
   const [cv, setCv] = useState<Cv>({ idiomas: [], formacao: [], experiencias: [], habilidades: [], ...inicial.cv });
   const [nascimento, setNascimento] = useState(isoParaBr(inicial.cv.nascimento));
   const [habilidade, setHabilidade] = useState('');
@@ -51,7 +52,7 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
   const salvar = async () => {
     setSalvando(true);
     setEstado({});
-    const r = await acaoSalvarCurriculo({ titulo, cidadeSlug: cidade, resumo, talentos, cv: { ...cv, nascimento: brParaIso(nascimento) } });
+    const r = await acaoSalvarCurriculo({ titulo, cidadeSlug: cidade, resumo, talentos, visivel, cv: { ...cv, nascimento: brParaIso(nascimento) } });
     setEstado(r.erros ? { erros: r.erros } : r.erro ? { erro: r.erro } : { ok: 'Perfil salvo.' });
     setSalvando(false);
     if (r.erros) requestAnimationFrame(() => document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
@@ -186,6 +187,7 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
       </Bloco>
 
       <div className="painel-caixa pilha">
+        <label className="aceite"><input type="checkbox" name="visivel" checked={visivel} onChange={(e) => setVisivel(e.target.checked)} /><span>Empresas com conta no GR Vagas podem ver meu perfil profissional: foto, cargo, habilidades, experiências e formação. Telefone, e-mail e endereço nunca aparecem. <a href={`/candidatos/${inicial.candidatoId}`} target="_blank" rel="noopener">Ver como fica</a></span></label>
         <label className="aceite"><input type="checkbox" name="talentos" checked={talentos} onChange={(e) => setTalentos(e.target.checked)} /><span>Aceito aparecer no banco de talentos: empresas assinantes podem ver meu nome, contato, perfil e currículo e me chamar para vagas. Posso retirar este aceite quando quiser.</span></label>
         {estado.ok ? <p className="aviso aviso-ok" role="status">{estado.ok}</p> : null}
         {estado.erro ? <p className="aviso aviso-erro" role="alert">{estado.erro}</p> : null}

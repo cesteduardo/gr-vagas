@@ -14,10 +14,10 @@ export default async function Perfil() {
     <div className="pilha" style={{ maxWidth: 860 }}>
       <div>
         <h1 className="titulo-painel">Seu perfil</h1>
-        <p className="leve" style={{ marginTop: 6 }}>Preencha como no seu currículo. As empresas às quais você se candidatar veem tudo isto.</p>
+        <p className="leve" style={{ marginTop: 6 }}>Preencha como no seu currículo. As empresas às quais você se candidatar veem tudo isto; as outras empresas com conta veem só a parte profissional, se você deixar.</p>
       </div>
       <FotoCandidato id={u.id} nome={u.nome} temFoto={Boolean(p.temFoto)} />
-      <EditorCurriculo inicial={{ titulo: p.titulo, cidadeSlug: p.cidadeSlug, resumo: p.resumo, talentos: Boolean(p.aceiteTalentosEm), cv: p.cv ?? {}, curriculoNome: p.curriculoNome, candidatoId: u.id }} />
+      <EditorCurriculo inicial={{ titulo: p.titulo, cidadeSlug: p.cidadeSlug, resumo: p.resumo, talentos: Boolean(p.aceiteTalentosEm), visivel: p.visivelEmpresas, cv: p.cv ?? {}, curriculoNome: p.curriculoNome, candidatoId: u.id }} />
     </div>
   );
 }

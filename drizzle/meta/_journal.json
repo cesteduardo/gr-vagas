@@ -43,6 +43,13 @@
       "when": 1793723328530,
       "tag": "0005_capa_e_foto",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793895465901,
+      "tag": "0006_perfil_visivel",
+      "breakpoints": true
     }
   ]
 }

@@ -7,6 +7,7 @@ import { aplicarEvento } from '@/lib/planos';
 import { bancoEmMemoria, umaEmpresa } from '@/lib/teste-apoio';
 import { denunciar, denunciasAbertas, resolverDenuncia } from '@/lib/vagas';
 import { enviarMensagem } from '@/lib/candidaturas';
+import { fotoParaVer, perfilParaEmpresa } from './perfis';
 import { alternarSalva, apresentacao, compatibilidade, buscarTalentos, criarAlerta, dadosDoUsuario, enviarAlertas, excluirConta, guardarCurriculo, salvarPerfil, validarPdf, vagasSalvas } from './perfis';
 
 let db: Banco;
@@ -141,5 +142,35 @@ describe('extras do Plus', () => {
     const lista = await candidaturasDaVaga(db, e.empresaId, e.vagaId, e.usuarioId);
     expect(lista[0]!.nome).toBe('Assinante');
     expect(lista[0]!.plus).toBe(true);
+  });
+});
+
+describe('perfil do candidato para empresas', () => {
+  it('empresa com conta vê o profissional, sem contato; candidato não vê o de outro', async () => {
+    const e = await umaEmpresa(db);
+    const c = await candidato(e.vagaId, 'Rita Souza');
+    await salvarPerfil(db, c.id, { titulo: 'Recepcionista', cidadeSlug: 'mirassol', resumo: 'Cinco anos em clínica.', aceiteTalentos: false, cv: { endereco: 'Rua Secreta, 1', habilidades: ['Excel'] } });
+    const outra = await umaEmpresa(db);
+    const visto = await perfilParaEmpresa(db, outra.usuarioId, c.id);
+    expect(visto).toMatchObject({ nome: 'Rita Souza', titulo: 'Recepcionista', conversas: [] });
+    expect(JSON.stringify(visto)).not.toContain('Rua Secreta');
+    expect(JSON.stringify(visto)).not.toContain('@exemplo.com');
+    expect((await perfilParaEmpresa(db, e.usuarioId, c.id))!.conversas).toHaveLength(1);
+    const outroCandidato = await candidato(e.vagaId, 'Caio Lima');
+    expect(await perfilParaEmpresa(db, outroCandidato.id, c.id)).toBeNull();
+  });
+
+  it('perfil escondido só aparece para a empresa que recebeu a candidatura', async () => {
+    const e = await umaEmpresa(db);
+    const c = await candidato(e.vagaId, 'Lia Mota');
+    await salvarPerfil(db, c.id, { titulo: 'Vendedora', cidadeSlug: 'mirassol', resumo: '', aceiteTalentos: false, visivelEmpresas: false });
+    await db.update(perfis).set({ foto: Buffer.from('x'), fotoMime: 'image/png' }).where(eq(perfis.usuarioId, c.id));
+    const outra = await umaEmpresa(db);
+    expect(await perfilParaEmpresa(db, outra.usuarioId, c.id)).toBeNull();
+    expect(await fotoParaVer(db, outra.usuarioId, c.id)).toBeNull();
+    expect(await perfilParaEmpresa(db, e.usuarioId, c.id)).not.toBeNull();
+    expect(await fotoParaVer(db, e.usuarioId, c.id)).not.toBeNull();
+    await salvarPerfil(db, c.id, { titulo: 'Vendedora', cidadeSlug: 'mirassol', resumo: '', aceiteTalentos: false, visivelEmpresas: true });
+    expect(await fotoParaVer(db, outra.usuarioId, c.id)).not.toBeNull();
   });
 });

@@ -85,7 +85,7 @@ const naoLidasSql = (papel: Papel, usuarioId: string) => {
 
 export async function candidaturasDaVaga(db: Banco, empresaId: string, vagaId: string, donoId: string) {
   return db
-    .select({ id: candidaturas.id, etapa: candidaturas.etapa, criadaEm: candidaturas.criadaEm, vistaEm: candidaturas.vistaEm, nome: usuarios.nome, telefone: usuarios.telefone, email: usuarios.email, titulo: perfis.titulo, temCurriculo: sql<boolean>`${perfis.curriculo} is not null`, naoLidas: naoLidasSql('empresa', donoId), plus: sql<boolean>`coalesce(${assinaturas.plano} = 'plus' and ${assinaturas.fimEm} > now(), false)` })
+    .select({ id: candidaturas.id, candidatoId: candidaturas.candidatoId, etapa: candidaturas.etapa, criadaEm: candidaturas.criadaEm, vistaEm: candidaturas.vistaEm, nome: usuarios.nome, telefone: usuarios.telefone, email: usuarios.email, titulo: perfis.titulo, temCurriculo: sql<boolean>`${perfis.curriculo} is not null`, naoLidas: naoLidasSql('empresa', donoId), plus: sql<boolean>`coalesce(${assinaturas.plano} = 'plus' and ${assinaturas.fimEm} > now(), false)` })
     .from(candidaturas)
     .innerJoin(vagas, and(eq(vagas.id, candidaturas.vagaId), eq(vagas.empresaId, empresaId)))
     .innerJoin(usuarios, eq(usuarios.id, candidaturas.candidatoId))

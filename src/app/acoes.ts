@@ -300,7 +300,7 @@ export async function acaoPerfil(_: EstadoForm, f: FormData): Promise<EstadoForm
   return { ok: true, aviso: 'Perfil salvo.' };
 }
 
-export async function acaoSalvarCurriculo(d: { titulo: string; cidadeSlug: string; resumo: string; talentos: boolean; cv: unknown }): Promise<{ ok?: boolean; erro?: string; erros?: Record<string, string> }> {
+export async function acaoSalvarCurriculo(d: { titulo: string; cidadeSlug: string; resumo: string; talentos: boolean; visivel?: boolean; cv: unknown }): Promise<{ ok?: boolean; erro?: string; erros?: Record<string, string> }> {
   const u = await exigirCandidato();
   const titulo = String(d.titulo ?? '').trim();
   const resumo = String(d.resumo ?? '').trim();
@@ -309,7 +309,7 @@ export async function acaoSalvarCurriculo(d: { titulo: string; cidadeSlug: strin
   if (!cidadePorSlug(String(d.cidadeSlug ?? ''))) erros.cidade = 'Escolha a cidade.';
   if (resumo.length > 2000) erros.resumo = 'Use no máximo 2.000 caracteres.';
   if (Object.keys(erros).length) return { erros };
-  await salvarPerfil(await banco(), u.id, { titulo, cidadeSlug: String(d.cidadeSlug), resumo, aceiteTalentos: Boolean(d.talentos), cv: cvValido(d.cv) });
+  await salvarPerfil(await banco(), u.id, { titulo, cidadeSlug: String(d.cidadeSlug), resumo, aceiteTalentos: Boolean(d.talentos), cv: cvValido(d.cv), visivelEmpresas: d.visivel === undefined ? undefined : Boolean(d.visivel) });
   return { ok: true };
 }
 

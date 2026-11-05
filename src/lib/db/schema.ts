@@ -111,6 +111,8 @@ export const perfis = pgTable('perfis', {
   foto: bytes('foto'),
   fotoMime: text('foto_mime'),
   aceiteTalentosEm: quando('aceite_talentos_em'),
+  // Empresas com conta veem o perfil (sem contato); o candidato pode esconder.
+  visivelEmpresas: boolean('visivel_empresas').notNull().default(true),
   cv: jsonb('cv').$type<import('@/lib/curriculo').Cv>().notNull().default({}),
   atualizadoEm: quando('atualizado_em').notNull().defaultNow(),
 });

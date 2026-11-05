@@ -1,0 +1,1 @@
+ALTER TABLE "perfis" ADD COLUMN "visivel_empresas" boolean DEFAULT true NOT NULL;

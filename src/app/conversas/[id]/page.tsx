@@ -51,6 +51,7 @@ export default async function PaginaConversa({ params, searchParams }: { params:
                   {a.perfilTitulo ? <div><dt>O que faz</dt><dd>{a.perfilTitulo}</dd></div> : null}
                   {a.perfilResumo ? <div><dt>Experiência</dt><dd style={{ fontWeight: 400, whiteSpace: 'pre-line' }}>{a.perfilResumo}</dd></div> : null}
                 </dl>
+                <Link className="btn btn-claro" href={`/candidatos/${a.candidatoId}`}>Ver perfil completo</Link>
                 <EnvioAuto action={acaoMudarEtapa}>
                   <input type="hidden" name="candidaturaId" value={a.candidaturaId} />
                   <label className="campo"><span>Etapa</span><Selecao name="etapa" defaultValue={a.etapa}>{ETAPAS.map((e) => <option key={e.id} value={e.id}>{e.rotulo}</option>)}</Selecao></label>

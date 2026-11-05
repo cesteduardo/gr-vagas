@@ -35,7 +35,8 @@ export async function Topo() {
   } else {
     const db = await banco();
     const empresa = u.tipo === 'contratante';
-    itens = [{ href: empresa ? '/painel' : '/candidato', rotulo: empresa ? 'Meu painel' : 'Minha conta', contagem: await naoLidas(db, u.id, empresa ? 'empresa' : 'candidato') }, ...publico];
+    // As não lidas ficam em Conversas, que leva direto à caixa de entrada.
+    itens = [{ href: empresa ? '/painel' : '/candidato', rotulo: empresa ? 'Meu painel' : 'Minha conta' }, { href: empresa ? '/painel/conversas' : '/candidato/conversas', rotulo: 'Conversas', contagem: await naoLidas(db, u.id, empresa ? 'empresa' : 'candidato') }, ...publico];
     acao = empresa ? { href: '/publicar', rotulo: 'Publicar vaga' } : { href: '/vagas', rotulo: 'Ver vagas' };
     extra = <form action={acaoSair}><button type="submit" className="btn btn-claro" style={{ width: '100%' }}>Sair</button></form>;
   }

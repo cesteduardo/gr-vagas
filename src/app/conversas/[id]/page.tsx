@@ -36,7 +36,7 @@ export default async function PaginaConversa({ params, searchParams }: { params:
     <>
       <Topo />
       <main className="pagina embrulho">
-        <Navegar voltarPara={ehEmpresa ? `/painel/vagas/${a.vagaId}` : '/candidato'} rotulo={ehEmpresa ? 'Candidatos da vaga' : 'Suas candidaturas'} />
+        <Navegar voltarPara={ehEmpresa ? '/painel/conversas' : '/candidato/conversas'} rotulo="Conversas" />
         <h1 style={{ fontSize: 'clamp(1.9rem, 5vw, 3rem)', marginBottom: 6 }}>{ehEmpresa ? a.candidatoNome : a.empresaNome}</h1>
         <p className="leve" style={{ marginBottom: 20 }}>Vaga: <Link href={`/vagas/${a.vagaSlug}`}>{a.vagaTitulo}</Link></p>
         {s.nova ? <p className="aviso aviso-ok" role="status" style={{ marginBottom: 16 }}>Candidatura enviada. A resposta da empresa aparece aqui e chega ao seu e-mail.</p> : null}

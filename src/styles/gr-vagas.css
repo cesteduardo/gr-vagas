@@ -1026,3 +1026,22 @@ img.perfil-avatar:is(.perfil-foto *), .cv-foto, img.avatar { object-fit: cover; 
 /* Campo que cresce com o texto não pode alargar a grade que o contém */
 .legenda-bloco > *, .legenda-campos > *, .cabeca-linha > * { min-width: 0; }
 textarea { max-width: 100%; }
+
+/* Caixa de entrada: uma linha por conversa; a não lida fica em negrito e com o contador azul. */
+.caixa-conversas { display: grid; gap: 6px; margin: 18px 0 0; padding: 0; list-style: none; }
+.conversa-linha { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: var(--r-md); background: var(--branco); box-shadow: var(--borda); color: var(--ink); text-decoration: none; transition: box-shadow var(--t-rapido) var(--ease); }
+.conversa-linha:hover { box-shadow: inset 0 0 0 1px #c9daf9; }
+.conversa-linha:hover strong { color: var(--azul-forte); }
+.conversa-linha:focus-visible { outline: 2px solid var(--ceu-forte); outline-offset: 2px; }
+.conversa-foto { display: grid; place-items: center; flex: none; width: 48px; height: 48px; overflow: hidden; border-radius: 50%; background: var(--azul-50); color: var(--azul-forte); font-size: 18px; font-weight: 700; box-shadow: inset 0 0 0 1px var(--line); }
+.conversa-foto img { width: 100%; height: 100%; object-fit: cover; background: var(--branco); }
+.conversa-corpo { display: grid; flex: 1; gap: 2px; min-width: 0; }
+.conversa-topo, .conversa-ultima { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; }
+.conversa-topo strong { min-width: 0; overflow: hidden; font-size: 16px; font-weight: 600; letter-spacing: -.015em; text-overflow: ellipsis; white-space: nowrap; transition: color var(--t-rapido) var(--ease); }
+.conversa-topo time { flex: none; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.conversa-vaga { overflow: hidden; color: var(--muted); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.conversa-ultima > span:first-child { min-width: 0; overflow: hidden; color: var(--ink-2); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.conversa-ultima .selo-contagem { flex: none; margin: 0; }
+.nao-lida .conversa-topo strong { font-weight: 700; }
+.nao-lida .conversa-topo time { color: var(--azul-forte); font-weight: 600; }
+.nao-lida .conversa-ultima > span:first-child { color: var(--ink); font-weight: 500; }

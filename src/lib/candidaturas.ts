@@ -161,3 +161,56 @@ export async function naoLidas(db: Banco, usuarioId: string, papel: Papel): Prom
     .where(and(quem, sql`${mensagens.autorId} <> ${usuarioId}`, or(isNull(lida), gt(mensagens.criadaEm, sql`${lida}`))));
   return r?.total ?? 0;
 }
+
+export type ItemConversa = {
+  id: string;
+  vagaTitulo: string;
+  etapa: string;
+  nome: string;
+  /** Logo da empresa (para o candidato) ou foto do candidato (para a empresa). */
+  imagem: string | null;
+  ultimaTexto: string | null;
+  ultimaEm: Date;
+  minha: boolean;
+  naoLidas: number;
+};
+
+// Caixa de entrada: uma linha por candidatura, a conversa mais recente primeiro.
+export async function caixaDeEntrada(db: Banco, usuarioId: string, papel: Papel, limite = 200): Promise<ItemConversa[]> {
+  const ultima = sql<Date>`coalesce((select max(${mensagens.criadaEm}) from ${mensagens} where ${mensagens.candidaturaId} = ${candidaturas.id}), ${candidaturas.criadaEm})`.mapWith(candidaturas.criadaEm);
+  const linhas = await db
+    .select({
+      id: candidaturas.id,
+      etapa: candidaturas.etapa,
+      vagaTitulo: vagas.titulo,
+      empresaId: empresas.id,
+      empresaNome: empresas.nome,
+      temLogo: sql<boolean>`${empresas.logo} is not null`,
+      candidatoId: candidaturas.candidatoId,
+      candidatoNome: usuarios.nome,
+      temFoto: sql<boolean>`coalesce(${perfis.foto} is not null, false)`,
+      ultimaTexto: sql<string | null>`(select ${mensagens.texto} from ${mensagens} where ${mensagens.candidaturaId} = ${candidaturas.id} order by ${mensagens.criadaEm} desc limit 1)`,
+      ultimoAutor: sql<string | null>`(select ${mensagens.autorId}::text from ${mensagens} where ${mensagens.candidaturaId} = ${candidaturas.id} order by ${mensagens.criadaEm} desc limit 1)`,
+      ultimaEm: ultima,
+      naoLidas: naoLidasSql(papel, usuarioId),
+    })
+    .from(candidaturas)
+    .innerJoin(vagas, eq(vagas.id, candidaturas.vagaId))
+    .innerJoin(empresas, eq(empresas.id, vagas.empresaId))
+    .innerJoin(usuarios, eq(usuarios.id, candidaturas.candidatoId))
+    .leftJoin(perfis, eq(perfis.usuarioId, candidaturas.candidatoId))
+    .where(papel === 'empresa' ? eq(empresas.donoId, usuarioId) : eq(candidaturas.candidatoId, usuarioId))
+    .orderBy(desc(ultima))
+    .limit(limite);
+  return linhas.map((l) => ({
+    id: l.id,
+    vagaTitulo: l.vagaTitulo,
+    etapa: l.etapa,
+    nome: papel === 'empresa' ? l.candidatoNome : l.empresaNome,
+    imagem: papel === 'empresa' ? (l.temFoto ? `/api/foto/${l.candidatoId}` : null) : l.temLogo ? `/api/logo/${l.empresaId}` : null,
+    ultimaTexto: l.ultimaTexto,
+    ultimaEm: new Date(l.ultimaEm),
+    minha: l.ultimoAutor === usuarioId,
+    naoLidas: Number(l.naoLidas) || 0,
+  }));
+}

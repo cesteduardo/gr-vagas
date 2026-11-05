@@ -70,6 +70,13 @@ export type Etapa = (typeof ETAPAS)[number]['id'];
 
 // Valores de referência, ainda não decididos.
 export const PRECOS_PROVISORIOS = true;
+
+// Impulso de vaga na tela inicial, pago à parte de qualquer plano. Valores provisórios.
+export const IMPULSOS = [
+  { dias: 7, preco: 19.9 },
+  { dias: 15, preco: 34.9 },
+  { dias: 30, preco: 59.9 },
+] as const;
 export type PlanoId = 'gratis' | 'essencial' | 'profissional' | 'plus';
 
 export type Limites = { vagasAbertas: number; marcaNaArte: boolean; destaques: number; talentos: boolean; alertaImediato: boolean; plus: boolean };

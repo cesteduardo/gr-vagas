@@ -1134,3 +1134,26 @@ textarea { max-width: 100%; }
 .arte-propria-vazia { display: grid; justify-items: center; gap: 8px; padding: clamp(36px, 6vw, 64px) 24px; border: 1.5px dashed #c9d4e6; border-radius: var(--r-lg); background: var(--branco); text-align: center; }
 .arte-propria-vazia .arquivo { justify-content: center; margin-top: 8px; }
 .abas-secao { margin-bottom: 22px; }
+
+/* Impulsionar a vaga: prazo em cartões, Pix com a chave para copiar. */
+.impulso { display: grid; gap: var(--gap); }
+.impulso-cabeca { display: grid; gap: 8px; }
+.impulso-cabeca h2 { font-size: clamp(22px, 2.2vw, 28px); letter-spacing: -.03em; }
+.impulso-pedido { display: grid; gap: 18px; }
+.impulso-opcoes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; border: 0; }
+.impulso-opcoes legend { margin-bottom: 10px; padding: 0; color: var(--ink-2); font-size: 14px; font-weight: 500; }
+@media (max-width: 560px) { .impulso-opcoes { grid-template-columns: minmax(0, 1fr); } }
+.impulso-opcao { position: relative; display: grid; align-content: center; gap: 2px; padding: 16px 18px; border-radius: var(--r-md); background: var(--branco); box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; transition: box-shadow .25s, background .25s; }
+.impulso-opcao strong { font-size: 18px; letter-spacing: -.02em; }
+.impulso-opcao span { color: var(--ink-2); font-size: 15px; }
+.impulso-opcao:hover strong { color: var(--azul-forte); }
+.impulso-opcao:has(input:checked) { background: var(--azul-50); box-shadow: inset 0 0 0 2px var(--azul); }
+.impulso-opcao:has(input:focus-visible) { outline: 2px solid var(--ceu-forte); outline-offset: 2px; }
+.impulso-pix { display: grid; gap: 12px; }
+.impulso-pix h3 { font-size: 20px; letter-spacing: -.025em; }
+.impulso-valor { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 10px; margin: 0; }
+.impulso-valor > div { padding: 14px 16px; border-radius: var(--r-md); background: var(--branco); }
+.impulso-valor dt { color: var(--muted); font-size: 13px; }
+.impulso-valor dd { margin: 2px 0 0; font-size: 18px; font-weight: 600; }
+.impulso-chave { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.impulso-chave code { overflow-wrap: anywhere; font: inherit; font-size: 16px; }

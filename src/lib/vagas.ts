@@ -1,7 +1,7 @@
 import { ordenarPorCombinacao } from '@/lib/combinar';
 import type { Cv } from '@/lib/curriculo';
 import { randomBytes } from 'node:crypto';
-import { and, asc, count, desc, eq, gt, ilike, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, ilike, isNotNull, or, sql } from 'drizzle-orm';
 import { abrirSessao } from '@/lib/auth/contas';
 import { cidadePorSlug, VALIDADE_VAGA_DIAS } from '@/lib/config';
 import type { Banco } from '@/lib/db/client';
@@ -230,7 +230,7 @@ export async function empresasDoLetreiro(db: Banco, agora = new Date()) {
     .from(empresas)
     .innerJoin(usuarios, eq(usuarios.id, empresas.donoId))
     .innerJoin(vagas, and(eq(vagas.empresaId, empresas.id), eq(vagas.estado, 'aberta'), gt(vagas.expiraEm, agora)))
-    .where(and(isNotNull(usuarios.emailConfirmadoEm), gt(empresas.anuncioAte, agora)))
+    .where(and(isNotNull(usuarios.emailConfirmadoEm), or(gt(empresas.anuncioAte, agora), gt(vagas.impulsoAte, agora))))
     .groupBy(empresas.id)
     .orderBy(desc(sql`count(${vagas.id})`))
     .limit(40);
@@ -243,15 +243,15 @@ export async function vagasQueCombinam(db: Banco, d: { titulo?: string; texto: s
   return ordenarPorCombinacao({ titulo: d.titulo ?? '', resumo: d.texto, cidadeSlug: d.cidadeSlug, cv: d.cv }, todas, quantas);
 }
 
-// Tela inicial: só quem tem anúncio no ar. É espaço pago, posto pelo administrador.
+// Tela inicial: só quem tem anúncio no ar, ou vaga impulsionada. É espaço pago, posto pelo administrador.
 export async function vagasAnunciadas(db: Banco, agora = new Date(), limite = 12) {
   return db
     .select(colunasVaga)
     .from(vagas)
     .innerJoin(empresas, eq(empresas.id, vagas.empresaId))
     .innerJoin(usuarios, eq(usuarios.id, empresas.donoId))
-    .where(and(condicoesBusca({}, agora), gt(empresas.anuncioAte, agora)))
-    .orderBy(desc(vagas.destaque), desc(vagas.publicadaEm))
+    .where(and(condicoesBusca({}, agora), or(gt(empresas.anuncioAte, agora), gt(vagas.impulsoAte, agora))))
+    .orderBy(desc(sql`coalesce(${vagas.impulsoAte} > ${agora}, false)`), desc(vagas.destaque), desc(vagas.publicadaEm))
     .limit(limite);
 }
 

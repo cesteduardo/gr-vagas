@@ -18,6 +18,7 @@ import { revisarTexto } from '@/lib/moderacao';
 import { validarPerfilEmpresa } from '@/lib/empresa';
 import { cvValido } from '@/lib/curriculo';
 import { aplicarCurriculo } from '@/lib/perfil-do-curriculo';
+import { cancelarPedidoImpulso, pedirImpulso, porImpulsoNoAr, recusarImpulso, tirarImpulso } from '@/lib/impulsos';
 import { alternarSalva, apagarAlerta, criarAlerta, excluirConta, guardarCurriculo, salvarPerfil } from '@/lib/perfis';
 import { assinar, cancelar } from '@/lib/planos';
 import { alternarDestaque, denunciar, editarVaga, mudarEstadoVaga, publicarVaga, resolverDenuncia, salvarArte, vagaAceitaCandidatura, anunciarEmpresa, tirarAnuncio } from '@/lib/vagas';
@@ -353,3 +354,35 @@ export async function acaoAnuncio(f: FormData) {
   revalidatePath('/');
 }
 
+
+// Impulso da vaga: a empresa pede e paga por Pix; o administrador confere e põe no ar.
+const uuidValido = (v: string) => /^[0-9a-f-]{36}$/i.test(v);
+
+export async function acaoPedirImpulso(f: FormData) {
+  const u = await exigirContratante();
+  const vagaId = texto(f, 'vagaId');
+  if (!uuidValido(vagaId)) redirect('/painel');
+  const r = await pedirImpulso(await banco(), u.empresaId, vagaId, Number(texto(f, 'dias')));
+  redirect(`/painel/vagas/${vagaId}?aba=impulsionar${r.ok ? '&pedido=1' : `&erro=${encodeURIComponent(r.erro)}`}`);
+}
+
+export async function acaoCancelarImpulso(f: FormData) {
+  const u = await exigirContratante();
+  const vagaId = texto(f, 'vagaId');
+  const pedidoId = texto(f, 'pedidoId');
+  if (uuidValido(pedidoId)) await cancelarPedidoImpulso(await banco(), u.empresaId, pedidoId);
+  redirect(uuidValido(vagaId) ? `/painel/vagas/${vagaId}?aba=impulsionar` : '/painel');
+}
+
+export async function acaoAdminImpulso(f: FormData) {
+  await exigirAdmin();
+  const db = await banco();
+  const id = texto(f, 'id');
+  if (!uuidValido(id)) return;
+  const fazer = texto(f, 'fazer');
+  if (fazer === 'no-ar') await porImpulsoNoAr(db, id);
+  else if (fazer === 'recusar') await recusarImpulso(db, id);
+  else if (fazer === 'tirar') await tirarImpulso(db, id);
+  revalidatePath('/admin/impulsos');
+  revalidatePath('/');
+}

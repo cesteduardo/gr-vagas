@@ -7,6 +7,8 @@ import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import { acaoDestaque, acaoEstadoVaga, acaoMudarEtapa } from '@/app/acoes';
 import { EditorArte } from '@/components/editor-arte';
+import { ImpulsoVaga } from '@/components/impulso-vaga';
+import { situacaoDoImpulso } from '@/lib/impulsos';
 import { Navegar } from '@/components/setas';
 import { EnvioAuto } from '@/components/envio-auto';
 import { FormEditarVaga } from '@/components/forms-painel';
@@ -30,7 +32,7 @@ export default async function VagaPainel({ params, searchParams }: { params: Pro
   const db = await banco();
   const v = await vagaDaEmpresa(db, u.empresaId, id);
   if (!v) notFound();
-  const aba = s.aba === 'arte' || s.aba === 'editar' ? s.aba : 'candidatos';
+  const aba = s.aba === 'arte' || s.aba === 'editar' || s.aba === 'impulsionar' ? s.aba : 'candidatos';
   const plano = await planoDe(db, u.id);
   const lim = limites(plano);
   const estado = rotuloEstado(v.estado, v.expiraEm);
@@ -56,6 +58,7 @@ export default async function VagaPainel({ params, searchParams }: { params: Pro
       );
     }
     if (aba === 'editar') return <FormEditarVaga v={v} />;
+    if (aba === 'impulsionar') return <ImpulsoVaga vagaId={v.id} aberta={vagaAceitaCandidatura(v)} situacao={await situacaoDoImpulso(db, v.id)} pedidoNovo={s.pedido === '1'} />;
     const lista = await candidaturasDaVaga(db, u.empresaId, v.id, u.id);
     if (!lista.length) {
       return (
@@ -114,6 +117,7 @@ export default async function VagaPainel({ params, searchParams }: { params: Pro
         { href: `/painel/vagas/${v.id}`, nome: 'Candidatos', ativo: aba === 'candidatos' },
         { href: `/painel/vagas/${v.id}?aba=arte`, nome: 'Arte', ativo: aba === 'arte' },
         { href: `/painel/vagas/${v.id}?aba=editar`, nome: 'Editar', ativo: aba === 'editar' },
+        { href: `/painel/vagas/${v.id}?aba=impulsionar`, nome: 'Impulsionar', ativo: aba === 'impulsionar' },
       ]} />
       {await conteudo()}
     </>

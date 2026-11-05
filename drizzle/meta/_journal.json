@@ -64,6 +64,13 @@
       "when": 1793895986366,
       "tag": "0008_arte_propria",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793897216372,
+      "tag": "0009_impulso_de_vaga",
+      "breakpoints": true
     }
   ]
 }

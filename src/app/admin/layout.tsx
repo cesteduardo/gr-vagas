@@ -16,7 +16,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         <div className="app">
           <aside className="app-menu">
             <p className="app-ola">Administração</p>
-            <Abas rotulo="Administração" itens={[{ href: '/admin', nome: 'Tela inicial', raiz: true }, { href: '/admin/denuncias', nome: 'Denúncias' }]} />
+            <Abas rotulo="Administração" itens={[{ href: '/admin', nome: 'Tela inicial', raiz: true }, { href: '/admin/impulsos', nome: 'Impulsos' }, { href: '/admin/denuncias', nome: 'Denúncias' }]} />
           </aside>
           <div className="app-conteudo">{children}</div>
         </div>

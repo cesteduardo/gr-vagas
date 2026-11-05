@@ -80,6 +80,8 @@ export const vagas = pgTable('vagas', {
   imagemMime: text('imagem_mime'),
   // Arte pronta, feita pela própria empresa; quando existe, é ela que vai para as redes.
   artePropria: bytes('arte_propria'),
+  // Impulso pago: a vaga aparece na tela inicial até esta data.
+  impulsoAte: quando('impulso_ate'),
   artePropriaMime: text('arte_propria_mime'),
   publicadaEm: quando('publicada_em').notNull().defaultNow(),
   expiraEm: quando('expira_em').notNull(),
@@ -154,6 +156,18 @@ export const eventosPagamento = pgTable('eventos_pagamento', {
   id: text('id').primaryKey(),
   recebidoEm: quando('recebido_em').notNull().defaultNow(),
 });
+
+// Pedido de impulso: a empresa pede, paga por Pix e o administrador põe no ar.
+export const pedidosImpulso = pgTable('pedidos_impulso', {
+  id: id(),
+  vagaId: uuid('vaga_id').notNull().references(() => vagas.id, { onDelete: 'cascade' }),
+  empresaId: uuid('empresa_id').notNull().references(() => empresas.id, { onDelete: 'cascade' }),
+  dias: integer('dias').notNull(),
+  valorCentavos: integer('valor_centavos').notNull(),
+  estado: text('estado').$type<'aberto' | 'no_ar' | 'recusado'>().notNull().default('aberto'),
+  criadoEm: quando('criado_em').notNull().defaultNow(),
+  resolvidoEm: quando('resolvido_em'),
+}, (t) => [index('pedidos_impulso_estado').on(t.estado, t.criadoEm)]);
 
 export const denuncias = pgTable('denuncias', {
   id: id(),

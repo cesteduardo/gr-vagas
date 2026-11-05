@@ -412,6 +412,24 @@ input:focus-visible, .selecao-botao:focus-visible, textarea:focus-visible { outl
 .planos-extra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; margin-top: var(--gap); padding: clamp(20px, 2.6vw, 28px) clamp(22px, 2.6vw, 32px); border-radius: var(--r-xl); background: var(--superficie); }
 .planos-extra h3 { font-size: 20px; letter-spacing: -.025em; }
 .planos-extra p { max-width: 64ch; margin-top: 4px; color: var(--ink-2); }
+.grade-planos.planos-1 { grid-template-columns: minmax(0, 1fr); max-width: 420px; }
+.app-conteudo .grade-planos { max-width: none; margin-inline: 0; }
+.app-conteudo .grade-planos.planos-1 { max-width: 420px; }
+/* Plano atual no painel: quem é, quanto custa, quando renova e quanto já usa. */
+.plano-atual { display: grid; gap: 20px; padding: clamp(22px, 3vw, 32px); border-radius: var(--r-xl); background: var(--branco); box-shadow: var(--borda), var(--sombra); }
+.plano-atual-topo { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.plano-atual-rotulo { color: var(--azul-forte); font-size: 13px; font-weight: 600; }
+.plano-atual h2 { margin-top: 2px; font-size: clamp(28px, 3vw, 38px); letter-spacing: -.03em; }
+.plano-atual-topo p { margin-top: 4px; color: var(--ink-2); }
+.plano-uso { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.plano-uso li { display: grid; gap: 4px; align-content: start; padding: 14px 16px; border-radius: var(--r-md); background: var(--superficie); }
+.plano-uso span { color: var(--muted); font-size: 13px; }
+.plano-uso b { font-size: 17px; font-weight: 600; letter-spacing: -.015em; }
+.plano-uso i { display: block; height: 6px; margin-top: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--azul) var(--p), var(--superficie-2) var(--p)); }
+.plano-uso i.cheio { background: linear-gradient(90deg, var(--laranja-escuro) var(--p), var(--superficie-2) var(--p)); }
+.plano-itens { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 8px 20px; margin: 0; padding: 0; list-style: none; font-size: 15px; }
+.plano-itens li { position: relative; padding-left: 24px; }
+.plano-itens li::before { content: ''; position: absolute; left: 3px; top: .45em; width: 11px; height: 6px; border-left: 2px solid var(--azul); border-bottom: 2px solid var(--azul); transform: rotate(-45deg); }
 .planos-pagamento { margin-top: 24px; color: var(--muted); font-size: 14px; text-align: center; }
 
 /* Perguntas: linhas brancas com borda, o + num círculo azul */

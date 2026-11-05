@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { acaoAnuncio } from '@/app/acoes';
@@ -36,7 +37,7 @@ export default async function AdminTelaInicial({ searchParams }: { searchParams:
             const venceu = Boolean(e.anuncioAte && !ativo);
             return (
               <li key={e.id} className="cartao admin-anuncio">
-                <span className="conversa-foto" aria-hidden="true">{e.temLogo ? <img src={`/api/logo/${e.id}`} alt="" width={48} height={48} loading="lazy" /> : e.nome.charAt(0).toUpperCase()}</span>
+                <span className="conversa-foto" aria-hidden="true">{e.temLogo ? <img src={`${BASE}/api/logo/${e.id}`} alt="" width={48} height={48} loading="lazy" /> : e.nome.charAt(0).toUpperCase()}</span>
                 <div>
                   <h2 style={{ fontSize: '1.2rem' }}><Link href={`/empresas/${e.slug}`} style={{ color: 'inherit' }}>{e.nome}</Link></h2>
                   <small>{e.abertas === 1 ? '1 vaga aberta' : `${e.abertas} vagas abertas`} · {e.email}</small>

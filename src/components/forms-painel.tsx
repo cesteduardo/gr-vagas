@@ -1,5 +1,6 @@
 'use client';
 
+import { BASE } from '@/lib/base';
 import { Selecao } from '@/components/selecao';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -77,7 +78,7 @@ export function EnviarCurriculo({ nomeAtual, candidatoId }: { nomeAtual: string 
   return (
     <div className="painel-caixa pilha">
       <h2 style={{ fontSize: '1.6rem' }}>Currículo</h2>
-      {nome ? <p>Arquivo atual: <a href={`/api/curriculo/${candidatoId}`}>{nome}</a></p> : <p className="leve">Envie um PDF para as empresas verem junto com as suas candidaturas.</p>}
+      {nome ? <p>Arquivo atual: <a href={`${BASE}/api/curriculo/${candidatoId}`}>{nome}</a></p> : <p className="leve">Envie um PDF para as empresas verem junto com as suas candidaturas.</p>}
       <div className="campo">
         <span>Arquivo em PDF, até 3 MB</span>
         <CampoArquivo
@@ -93,7 +94,7 @@ export function EnviarCurriculo({ nomeAtual, candidatoId }: { nomeAtual: string 
             const d = new FormData();
             d.set('arquivo', arquivo);
             try {
-              const r = await fetch('/api/curriculo', { method: 'POST', body: d });
+              const r = await fetch(`${BASE}/api/curriculo`, { method: 'POST', body: d });
               const j = (await r.json()) as { nome?: string; erro?: string; acrescimos?: Acrescimos; combinam?: number };
               if (r.ok && j.nome) {
                 setNome(j.nome);

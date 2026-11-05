@@ -1,5 +1,6 @@
 'use client';
 
+import { BASE } from '@/lib/base';
 import { useId, useState } from 'react';
 
 type Envio = { url?: string; erro?: string };
@@ -40,23 +41,23 @@ const inicial = (n: string) => n.trim().charAt(0).toUpperCase() || '?';
 
 // Capa larga com o logo por cima, do mesmo jeito que aparece na página pública da empresa.
 export function CapaEmpresaEditor({ empresaId, nome, temCapa, temLogo }: { empresaId: string; nome: string; temCapa: boolean; temLogo: boolean }) {
-  const [capa, setCapa] = useState(temCapa ? `/api/capa/${empresaId}` : null);
-  const [logo, setLogo] = useState(temLogo ? `/api/logo/${empresaId}` : null);
+  const [capa, setCapa] = useState(temCapa ? `${BASE}/api/capa/${empresaId}` : null);
+  const [logo, setLogo] = useState(temLogo ? `${BASE}/api/logo/${empresaId}` : null);
   const [erro, setErro] = useState('');
   return (
     <div className="perfil-imagens">
       <div className="perfil-capa">
         {capa ? <img src={capa} alt="Capa atual" /> : null}
         <div className="perfil-capa-acoes">
-          <BotaoImagem rota="/api/capa" rotulo={capa ? 'Trocar capa' : 'Pôr uma capa'} classe="btn btn-claro btn-peq btn-vidro" aoEnviar={(u) => { setCapa(u); setErro(''); }} aoErro={setErro} />
-          {capa ? <button type="button" className="btn btn-claro btn-peq btn-vidro" onClick={async () => { if (await tirar('/api/capa')) setCapa(null); }}>Tirar</button> : null}
+          <BotaoImagem rota={`${BASE}/api/capa`} rotulo={capa ? 'Trocar capa' : 'Pôr uma capa'} classe="btn btn-claro btn-peq btn-vidro" aoEnviar={(u) => { setCapa(u); setErro(''); }} aoErro={setErro} />
+          {capa ? <button type="button" className="btn btn-claro btn-peq btn-vidro" onClick={async () => { if (await tirar(`${BASE}/api/capa`)) setCapa(null); }}>Tirar</button> : null}
         </div>
       </div>
       <div className="perfil-pe">
         {logo ? <img className="perfil-avatar" src={logo} alt="Logo atual" /> : <span className="perfil-avatar perfil-avatar-inicial" aria-hidden="true">{inicial(nome)}</span>}
         <div className="linha-botoes">
-          <BotaoImagem rota="/api/logo" rotulo={logo ? 'Trocar logo' : 'Enviar logo'} aoEnviar={(u) => { setLogo(u); setErro(''); }} aoErro={setErro} />
-          {logo ? <button type="button" className="btn btn-claro btn-peq" onClick={async () => { if (await tirar('/api/logo')) setLogo(null); }}>Tirar logo</button> : null}
+          <BotaoImagem rota={`${BASE}/api/logo`} rotulo={logo ? 'Trocar logo' : 'Enviar logo'} aoEnviar={(u) => { setLogo(u); setErro(''); }} aoErro={setErro} />
+          {logo ? <button type="button" className="btn btn-claro btn-peq" onClick={async () => { if (await tirar(`${BASE}/api/logo`)) setLogo(null); }}>Tirar logo</button> : null}
         </div>
         <p className="nota">Capa em JPG, PNG ou WebP de até 3 MB, de preferência larga (1600 × 400). Logo de até 1 MB.</p>
         {erro ? <p className="aviso aviso-erro" role="alert">{erro}</p> : null}
@@ -67,7 +68,7 @@ export function CapaEmpresaEditor({ empresaId, nome, temCapa, temLogo }: { empre
 
 // Foto do candidato: só a foto, sem capa. Quem vê é quem já pode ver o currículo.
 export function FotoCandidato({ id, nome, temFoto }: { id: string; nome: string; temFoto: boolean }) {
-  const [foto, setFoto] = useState(temFoto ? `/api/foto/${id}` : null);
+  const [foto, setFoto] = useState(temFoto ? `${BASE}/api/foto/${id}` : null);
   const [erro, setErro] = useState('');
   return (
     <section className="cv-bloco perfil-foto">
@@ -76,8 +77,8 @@ export function FotoCandidato({ id, nome, temFoto }: { id: string; nome: string;
         <h2>Sua foto</h2>
         <p className="nota">Aparece no seu currículo para as empresas às quais você se candidatar. JPG, PNG ou WebP de até 2 MB.</p>
         <div className="linha-botoes">
-          <BotaoImagem rota="/api/foto" rotulo={foto ? 'Trocar foto' : 'Enviar foto'} aoEnviar={(u) => { setFoto(u); setErro(''); }} aoErro={setErro} />
-          {foto ? <button type="button" className="btn btn-claro btn-peq" onClick={async () => { if (await tirar('/api/foto')) setFoto(null); }}>Tirar foto</button> : null}
+          <BotaoImagem rota={`${BASE}/api/foto`} rotulo={foto ? 'Trocar foto' : 'Enviar foto'} aoEnviar={(u) => { setFoto(u); setErro(''); }} aoErro={setErro} />
+          {foto ? <button type="button" className="btn btn-claro btn-peq" onClick={async () => { if (await tirar(`${BASE}/api/foto`)) setFoto(null); }}>Tirar foto</button> : null}
         </div>
         {erro ? <p className="aviso aviso-erro" role="alert">{erro}</p> : null}
       </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { BASE } from '@/lib/base';
 import { Selecao } from '@/components/selecao';
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties, type ReactNode } from 'react';
 import { acaoSalvarArte } from '@/app/acoes';
@@ -188,10 +189,10 @@ export function EditorArte(p: Props) {
           copiado={copiado === 'link'}
           copiar={() => copiar(p.dados.link, 'link')}
           erro={erro}
-          enviar={(e) => enviar(e, `/api/vagas/${p.vagaId}/arte-propria`, setArtePropria)}
+          enviar={(e) => enviar(e, `${BASE}/api/vagas/${p.vagaId}/arte-propria`, setArtePropria)}
           tirar={async () => {
             setErro(null);
-            const r = await fetch(`/api/vagas/${p.vagaId}/arte-propria`, { method: 'DELETE' }).catch(() => null);
+            const r = await fetch(`${BASE}/api/vagas/${p.vagaId}/arte-propria`, { method: 'DELETE' }).catch(() => null);
             if (r?.ok) { setArtePropria(null); setModo('site'); } else setErro('Não foi possível tirar a arte. Tente de novo.');
           }}
         />
@@ -284,7 +285,7 @@ export function EditorArte(p: Props) {
             <Ajuste titulo="Foto e logo" resumo={imagemUrl ? 'Com foto' : logoUrl ? 'Com logo' : 'Sem foto nem logo'}>
               <div>
                 <span className="rotulo-grupo">Foto da vaga ou da empresa</span>
-                <CampoArquivo id="imagem" accept="image/png,image/jpeg,image/webp" rotulo="Escolher foto" onChange={(e) => enviar(e, `/api/vagas/${p.vagaId}/imagem`, (u) => { setImagemUrl(u); if (c.modelo !== 'foto' && c.modelo !== 'fotointeira') muda({ modelo: 'foto' }); })} />
+                <CampoArquivo id="imagem" accept="image/png,image/jpeg,image/webp" rotulo="Escolher foto" onChange={(e) => enviar(e, `${BASE}/api/vagas/${p.vagaId}/imagem`, (u) => { setImagemUrl(u); if (c.modelo !== 'foto' && c.modelo !== 'fotointeira') muda({ modelo: 'foto' }); })} />
                 <p className="nota">Até 4 MB. Use só imagens suas. Aparece nos modelos Com foto e Foto inteira.</p>
               </div>
               {imagemUrl ? (
@@ -293,12 +294,12 @@ export function EditorArte(p: Props) {
                     <label className="campo"><span>Enquadrar na horizontal</span><input type="range" min={0} max={100} style={{ '--p': `${c.focoX ?? 50}%` } as CSSProperties} value={c.focoX ?? 50} onChange={(e) => muda({ focoX: Number(e.target.value) })} /></label>
                     <label className="campo"><span>Enquadrar na vertical</span><input type="range" min={0} max={100} style={{ '--p': `${c.focoY ?? 50}%` } as CSSProperties} value={c.focoY ?? 50} onChange={(e) => muda({ focoY: Number(e.target.value) })} /></label>
                   </div>
-                  <div><button type="button" className="btn btn-claro btn-peq" onClick={async () => { await fetch(`/api/vagas/${p.vagaId}/imagem`, { method: 'DELETE' }); setImagemUrl(null); }}>Remover foto</button></div>
+                  <div><button type="button" className="btn btn-claro btn-peq" onClick={async () => { await fetch(`${BASE}/api/vagas/${p.vagaId}/imagem`, { method: 'DELETE' }); setImagemUrl(null); }}>Remover foto</button></div>
                 </>
               ) : null}
               <div>
                 <span className="rotulo-grupo">Logo da empresa</span>
-                <CampoArquivo id="logo" accept="image/png,image/jpeg,image/webp" rotulo="Escolher logo" onChange={(e) => enviar(e, '/api/logo', setLogoUrl)} />
+                <CampoArquivo id="logo" accept="image/png,image/jpeg,image/webp" rotulo="Escolher logo" onChange={(e) => enviar(e, `${BASE}/api/logo`, setLogoUrl)} />
                 <p className="nota">PNG, JPG ou WebP, até 1 MB. Vale para todas as suas vagas.</p>
               </div>
             </Ajuste>

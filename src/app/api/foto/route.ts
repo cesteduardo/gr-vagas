@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import { NextResponse } from 'next/server';
 import { usuarioAtual } from '@/lib/auth/sessao';
 import { banco } from '@/lib/db/client';
@@ -10,7 +11,7 @@ export async function POST(req: Request) {
   const img = await lerImagemEnviada(req, MAX_FOTO, 'A foto');
   if (img instanceof NextResponse) return img;
   await salvarFoto(await banco(), u.id, img.b, img.mime);
-  return NextResponse.json({ url: `/api/foto/${u.id}?v=${Date.now()}` });
+  return NextResponse.json({ url: `${BASE}/api/foto/${u.id}?v=${Date.now()}` });
 }
 
 export async function DELETE() {

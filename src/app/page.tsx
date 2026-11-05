@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import { Selecao } from '@/components/selecao';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -37,7 +38,7 @@ export default async function Inicio() {
       <Topo />
       <main>
         <Hero titulo="Emprego" cinza="sem enrolação." texto="Vagas em São José do Rio Preto e região. Busque, solte o currículo e converse direto com quem contrata." lado={<PortaCandidato />}>
-          <form action="/vagas" className="busca-grande" role="search">
+          <form action={`${BASE}/vagas`} className="busca-grande" role="search">
             <label className="campo"><span>Qual vaga você procura?</span><input type="search" name="q" placeholder="Recepcionista, motorista, vendas" /></label>
             <label className="campo"><span>Cidade</span>
               <Selecao name="cidade" defaultValue="">
@@ -57,7 +58,7 @@ export default async function Inicio() {
                 <h2 id="t-vagas">Vagas em destaque</h2>
                 <p className="secao-nota">Espaço de anúncio.</p>
               </div>
-              <Link className="btn btn-claro" href="/vagas">{total === 1 ? 'Ver a vaga aberta' : `Ver as ${total} vagas abertas`}</Link>
+              <Link className="btn btn-claro" href={`/vagas`}>{total === 1 ? 'Ver a vaga aberta' : `Ver as ${total} vagas abertas`}</Link>
             </div>
             <CarrosselVagas vagas={itens} />
           </section>

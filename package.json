@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev -p 4820",
     "build": "next build",
-    "start": "next start -p 4820",
+    "start": "next start -p ${PORT:-4820}",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",

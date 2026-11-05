@@ -1,5 +1,6 @@
 'use client';
 
+import { BASE } from '@/lib/base';
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { acaoEnviarMensagem } from '@/app/acoes';
 import { formatarHora } from '@/lib/texto';
@@ -15,7 +16,7 @@ export function Conversa({ id, minhaId, inicial }: { id: string; minhaId: string
 
   const atualizar = async () => {
     try {
-      const r = await fetch(`/api/conversas/${id}`, { cache: 'no-store' });
+      const r = await fetch(`${BASE}/api/conversas/${id}`, { cache: 'no-store' });
       if (r.ok) setMsgs(((await r.json()) as { mensagens: Msg[] }).mensagens);
     } catch {
       // A próxima volta tenta de novo.

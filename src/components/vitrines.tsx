@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import Link from 'next/link';
 import { Carrossel } from './carrossel';
 import { formatarSalario } from '@/lib/texto';
@@ -11,7 +12,7 @@ function CartaoVaga({ v, i, copia }: { v: VagaPublica; i: number; copia?: boolea
   return (
     <Link href={`/vagas/${v.slug}`} className={`vaga-cartao tom-${i % 4}`} tabIndex={copia ? -1 : undefined} aria-hidden={copia ? true : undefined}>
       <span className="vaga-cartao-topo">
-        {v.temLogo ? <img src={`/api/logo/${v.empresaId}`} alt="" width={44} height={44} loading="lazy" decoding="async" /> : <span className="inicial">{inicial(v.empresaNome)}</span>}
+        {v.temLogo ? <img src={`${BASE}/api/logo/${v.empresaId}`} alt="" width={44} height={44} loading="lazy" decoding="async" /> : <span className="inicial">{inicial(v.empresaNome)}</span>}
         <span className="vaga-cartao-empresa">{v.empresaNome}</span>
       </span>
       <strong>{v.titulo}</strong>
@@ -35,7 +36,7 @@ export function CarrosselVagas({ vagas }: { vagas: VagaPublica[] }) {
 function Azulejo({ e, i, copia }: { e: Empresa; i: number; copia?: boolean }) {
   return (
     <Link href={`/empresas/${e.slug}`} className="azulejo" tabIndex={copia ? -1 : undefined} aria-hidden={copia ? true : undefined}>
-      {e.temLogo ? <img src={`/api/logo/${e.id}`} alt="" width={40} height={40} loading="lazy" decoding="async" /> : <span className={`inicial tom-${i % 4}`}>{inicial(e.nome)}</span>}
+      {e.temLogo ? <img src={`${BASE}/api/logo/${e.id}`} alt="" width={40} height={40} loading="lazy" decoding="async" /> : <span className={`inicial tom-${i % 4}`}>{inicial(e.nome)}</span>}
       <span>{e.nome}<small>{e.vagas === 1 ? '1 vaga aberta' : `${e.vagas} vagas abertas`}</small></span>
     </Link>
   );

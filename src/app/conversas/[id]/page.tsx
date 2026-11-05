@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import { Selecao } from '@/components/selecao';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -55,7 +56,7 @@ export default async function PaginaConversa({ params, searchParams }: { params:
                   <input type="hidden" name="candidaturaId" value={a.candidaturaId} />
                   <label className="campo"><span>Etapa</span><Selecao name="etapa" defaultValue={a.etapa}>{ETAPAS.map((e) => <option key={e.id} value={e.id}>{e.rotulo}</option>)}</Selecao></label>
                 </EnvioAuto>
-                {a.temCurriculo ? <a className="btn btn-claro" href={`/api/curriculo/${a.candidatoId}?candidatura=${a.candidaturaId}`}>Baixar currículo</a> : <p className="nota">Sem currículo em PDF. Você pode pedir nesta conversa.</p>}
+                {a.temCurriculo ? <a className="btn btn-claro" href={`${BASE}/api/curriculo/${a.candidatoId}?candidatura=${a.candidaturaId}`}>Baixar currículo</a> : <p className="nota">Sem currículo em PDF. Você pode pedir nesta conversa.</p>}
                 <a className="btn btn-claro" href={linkWhatsapp(a.candidatoTelefone, `Olá, ${a.candidatoNome}! Vi sua candidatura para a vaga de ${a.vagaTitulo}.`)} target="_blank" rel="noopener">Continuar no WhatsApp</a>
               </div>
             ) : (
@@ -70,7 +71,7 @@ export default async function PaginaConversa({ params, searchParams }: { params:
         {perfilCandidato ? (
           <details className="caixa-dobra cv-dobra">
             <summary>Ver o currículo completo de {a.candidatoNome.split(' ')[0]}</summary>
-            <VisaoCurriculo nome={a.candidatoNome} email={a.candidatoEmail} telefone={a.candidatoTelefone} titulo={perfilCandidato.titulo} cidadeSlug={perfilCandidato.cidadeSlug} resumo={perfilCandidato.resumo} cv={perfilCandidato.cv ?? {}} foto={perfilCandidato.temFoto ? `/api/foto/${a.candidatoId}` : null} />
+            <VisaoCurriculo nome={a.candidatoNome} email={a.candidatoEmail} telefone={a.candidatoTelefone} titulo={perfilCandidato.titulo} cidadeSlug={perfilCandidato.cidadeSlug} resumo={perfilCandidato.resumo} cv={perfilCandidato.cv ?? {}} foto={perfilCandidato.temFoto ? `${BASE}/api/foto/${a.candidatoId}` : null} />
           </details>
         ) : null}
       </main>

@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import type { Metadata } from 'next';
 import { FormSenha } from '@/components/form-simples';
 import { FormExcluirConta } from '@/components/forms-painel';
@@ -21,7 +22,7 @@ export default async function Conta() {
       <FormSenha tem={await temSenha(await banco(), u.id)} />
       <div className="painel-caixa pilha">
         <h2 style={{ fontSize: 24 }}>Seus dados</h2>
-        <p><a href="/api/meus-dados">Baixar meus dados</a></p>
+        <p><a href={`${BASE}/api/meus-dados`}>Baixar meus dados</a></p>
         <details>
           <summary style={{ cursor: 'pointer', minHeight: 44, paddingBlock: 10 }}>Excluir minha conta</summary>
           <p className="leve" style={{ marginBlock: 8 }}>Apaga de vez os dados da conta. Não dá para desfazer.</p>

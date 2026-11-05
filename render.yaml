@@ -1,0 +1,30 @@
+# Render: o GR Vagas em grbrands.com.br/vagas. O Worker da GR Brands repassa /vagas para cá.
+# Demonstração: vagas de exemplo, contas de teste, pagamento simulado e sem e-mail de verdade.
+services:
+  - type: web
+    name: gr-vagas
+    runtime: node
+    plan: free
+    region: virginia
+    branch: main
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /vagas
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: SIMULADOR
+        value: "1"
+      - key: NEXT_PUBLIC_CAMINHO_BASE
+        value: /vagas
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://grbrands.com.br/vagas
+      - key: ORIGENS_PERMITIDAS
+        value: grbrands.com.br
+      - key: CABECALHO_IP
+        value: x-gr-ip
+      - key: ADMIN_EMAILS
+        sync: false
+      # Postgres do Neon (região us-east-1, perto do Render em Virginia).
+      - key: DATABASE_URL
+        sync: false

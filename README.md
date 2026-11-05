@@ -52,3 +52,9 @@ Toda decisão pendente (nome, preços, cidades) fica em `src/lib/config.ts`. Lis
 - **Administração:** `ADMIN_EMAILS` define quem abre `/admin`: o espaço pago da tela inicial (só aparece empresa com anúncio no ar, posto ali por prazo) e as denúncias. Na demonstração, `admin@teste.com` / `teste1234`.
 - **Arquivos:** logo e currículo ficam no Postgres. Bom para começar; com volume, mover para armazenamento de objetos.
 - **Instalação:** `.npmrc` usa `legacy-peer-deps` porque o npm 10.9 falha ao resolver esta árvore.
+
+## No ar em grbrands.com.br/vagas
+
+O app roda no Render (`render.yaml`) com Postgres do Neon, e o Worker da GR Brands (`vagas-proxy.js` na pasta GRB) repassa tudo o que começa com `/vagas`. `NEXT_PUBLIC_CAMINHO_BASE=/vagas` liga o `basePath` do Next; endereços escritos à mão (fetch, `<img>`, `<a>`, `<form>`) usam `BASE` de `src/lib/base.ts`. Um `<Link>` do Next nunca leva `BASE`: ele já põe o prefixo sozinho.
+
+Para testar o subcaminho aqui: `NEXT_PUBLIC_CAMINHO_BASE=/vagas NEXT_PUBLIC_SITE_URL=http://localhost:4830/vagas npm run build` e `PORT=4830 ... npm start`, abrindo `http://localhost:4830/vagas`.

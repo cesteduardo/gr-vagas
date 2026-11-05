@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import { Selecao } from '@/components/selecao';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -46,9 +47,9 @@ export default async function VagaPainel({ params, searchParams }: { params: Pro
           dados={{ titulo: v.titulo, empresa: v.empresaNome, cidade: `${v.cidade} - ${v.uf}`, contrato: v.contrato, modalidade: v.modalidade, salario, link }}
           inicial={{ ...v.arte, whatsapp: v.arte.whatsapp || u.telefone }}
           marca={lim.marcaNaArte}
-          logoUrl={e?.temLogo ? `/api/logo/${u.empresaId}` : null}
-          imagemUrl={v.temImagem ? `/api/vagas/${v.id}/imagem` : null}
-          artePropriaUrl={v.temArtePropria ? `/api/vagas/${v.id}/arte-propria` : null}
+          logoUrl={e?.temLogo ? `${BASE}/api/logo/${u.empresaId}` : null}
+          imagemUrl={v.temImagem ? `${BASE}/api/vagas/${v.id}/imagem` : null}
+          artePropriaUrl={v.temArtePropria ? `${BASE}/api/vagas/${v.id}/arte-propria` : null}
           beneficios={v.beneficios}
           vaga={{ cidade: v.cidade, uf: v.uf, requisitos: v.requisitos, area: v.area }}
         />

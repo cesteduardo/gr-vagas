@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
@@ -38,7 +39,7 @@ export default async function PerfilCandidato({ params }: P) {
         <div className="candidato-grade">
           <div className="pilha">
             <header className="painel-caixa candidato-topo">
-              {p.temFoto ? <img className="perfil-avatar" src={`/api/foto/${id}`} alt={`Foto de ${p.nome}`} width={104} height={104} /> : <span className="perfil-avatar perfil-avatar-inicial" aria-hidden="true">{p.nome.charAt(0).toUpperCase()}</span>}
+              {p.temFoto ? <img className="perfil-avatar" src={`${BASE}/api/foto/${id}`} alt={`Foto de ${p.nome}`} width={104} height={104} /> : <span className="perfil-avatar perfil-avatar-inicial" aria-hidden="true">{p.nome.charAt(0).toUpperCase()}</span>}
               <div>
                 <h1>{p.nome}</h1>
                 <p>{[p.titulo, cidade ? `${cidade.nome} - ${cidade.uf}` : ''].filter(Boolean).join(' · ')}</p>
@@ -103,7 +104,7 @@ export default async function PerfilCandidato({ params }: P) {
               ) : (
                 <>
                   <p className="leve">O contato aparece quando {primeiro} se candidata a uma vaga sua, ou no banco de talentos dos planos pagos, se aceitou aparecer lá.</p>
-                  <Link className="btn btn-claro btn-peq" href="/painel/plano">Ver os planos</Link>
+                  <Link className="btn btn-claro btn-peq" href={`/painel/plano`}>Ver os planos</Link>
                 </>
               )}
             </aside>

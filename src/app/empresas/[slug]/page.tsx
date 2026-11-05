@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import type { Metadata } from 'next';
 import { eq, sql } from 'drizzle-orm';
 import { cidadePorSlug } from '@/lib/config';
@@ -50,8 +51,8 @@ export default async function PaginaEmpresa({ params }: P) {
         <section className="heroi embrulho">
         <header className="empresa-topo">
           {/* Capa da empresa ou, sem ela, um degradê azul do site; o logo fica por cima, na emenda */}
-          <div className="perfil-capa">{e.temCapa ? <img src={`/api/capa/${e.id}`} alt="" /> : null}</div>
-          {e.temLogo ? <img className="perfil-avatar" src={`/api/logo/${e.id}`} alt={`Logo de ${e.nome}`} width={128} height={128} /> : <span className="perfil-avatar perfil-avatar-inicial" aria-hidden="true">{e.nome.charAt(0).toUpperCase()}</span>}
+          <div className="perfil-capa">{e.temCapa ? <img src={`${BASE}/api/capa/${e.id}`} alt="" /> : null}</div>
+          {e.temLogo ? <img className="perfil-avatar" src={`${BASE}/api/logo/${e.id}`} alt={`Logo de ${e.nome}`} width={128} height={128} /> : <span className="perfil-avatar perfil-avatar-inicial" aria-hidden="true">{e.nome.charAt(0).toUpperCase()}</span>}
           <div>
             <h1>{e.nome}</h1>
             {resumo ? <p>{resumo}</p> : null}

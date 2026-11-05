@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 import { usuarioAtual } from '@/lib/auth/sessao';
@@ -13,7 +14,7 @@ export async function POST(req: Request) {
   const img = await lerImagemEnviada(req, MAX, 'A capa');
   if (img instanceof NextResponse) return img;
   await (await banco()).update(empresas).set({ capa: img.b, capaMime: img.mime }).where(eq(empresas.id, u.empresaId));
-  return NextResponse.json({ url: `/api/capa/${u.empresaId}?v=${Date.now()}` });
+  return NextResponse.json({ url: `${BASE}/api/capa/${u.empresaId}?v=${Date.now()}` });
 }
 
 export async function DELETE() {

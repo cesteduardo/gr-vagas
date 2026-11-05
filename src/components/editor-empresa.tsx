@@ -1,5 +1,6 @@
 'use client';
 
+import { BASE } from '@/lib/base';
 import { useState, type ReactNode } from 'react';
 import { acaoSalvarEmpresa } from '@/app/acoes';
 import { AREAS, CIDADES } from '@/lib/config';
@@ -69,7 +70,7 @@ export function EditorEmpresa({ inicial }: { inicial: { id: string; nome: string
 
       <div className="painel-caixa linha-botoes">
         <button className="btn" disabled={salvando}>{salvando ? 'Salvando…' : 'Salvar dados'}</button>
-        <a className="btn btn-claro" href={`/empresas/${inicial.slug}`} target="_blank" rel="noopener">Ver página pública</a>
+        <a className="btn btn-claro" href={`${BASE}/empresas/${inicial.slug}`} target="_blank" rel="noopener">Ver página pública</a>
         {estado.ok ? <span className="aviso aviso-ok" role="status">Dados da empresa salvos.</span> : null}
         {estado.erro ? <span className="aviso aviso-erro" role="alert">{estado.erro}</span> : null}
       </div>

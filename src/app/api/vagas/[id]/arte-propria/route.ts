@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 import { usuarioAtual } from '@/lib/auth/sessao';
@@ -39,7 +40,7 @@ export async function POST(req: Request, { params }: C) {
   const mime = tipoReal(b);
   if (!mime) return NextResponse.json({ erro: 'Envie a arte em PNG, JPG ou WebP.' }, { status: 400 });
   if (!(await guardarArtePropria(await banco(), u.empresaId, id, b, mime))) return NextResponse.json({ erro: 'Vaga não encontrada.' }, { status: 404 });
-  return NextResponse.json({ url: `/api/vagas/${id}/arte-propria?v=${Date.now()}` });
+  return NextResponse.json({ url: `${BASE}/api/vagas/${id}/arte-propria?v=${Date.now()}` });
 }
 
 export async function DELETE(_: Request, { params }: C) {

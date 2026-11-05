@@ -1,5 +1,6 @@
 'use client';
 
+import { BASE } from '@/lib/base';
 import { useState, type ReactNode } from 'react';
 import { acaoSalvarCurriculo } from '@/app/acoes';
 import { CIDADES } from '@/lib/config';
@@ -83,7 +84,7 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
         <div>
           <h2 style={{ fontSize: 20 }}>Seu currículo em PDF</h2>
           <p className="nota">{arquivo ? `Arquivo atual: ${arquivo}. ` : ''}A empresa recebe junto com a candidatura. Ao enviar, o perfil abaixo se completa com o que estiver no arquivo, sem apagar o que você já escreveu.</p>
-          {arquivo ? <p style={{ marginTop: 6 }}><a href={`/api/curriculo/${inicial.candidatoId}`}>{arquivo}</a></p> : null}
+          {arquivo ? <p style={{ marginTop: 6 }}><a href={`${BASE}/api/curriculo/${inicial.candidatoId}`}>{arquivo}</a></p> : null}
         </div>
         <CampoArquivo id="arquivo-curriculo" accept="application/pdf" rotulo="Enviar PDF" onChange={async (e) => {
           const f = e.target.files?.[0];
@@ -91,7 +92,7 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
           const d = new FormData();
           d.set('arquivo', f);
           try {
-            const r = await fetch('/api/curriculo', { method: 'POST', body: d });
+            const r = await fetch(`${BASE}/api/curriculo`, { method: 'POST', body: d });
             const j = (await r.json()) as { nome?: string; erro?: string; acrescimos?: Acrescimos; combinam?: number };
             if (!r.ok || !j.nome) setEstado({ erro: j.erro ?? 'Não foi possível enviar o arquivo.' });
             else {
@@ -187,7 +188,7 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
       </Bloco>
 
       <div className="painel-caixa pilha">
-        <label className="aceite"><input type="checkbox" name="visivel" checked={visivel} onChange={(e) => setVisivel(e.target.checked)} /><span>Empresas com conta no GR Vagas podem ver meu perfil profissional: foto, cargo, habilidades, experiências e formação. Telefone, e-mail e endereço nunca aparecem. <a href={`/candidatos/${inicial.candidatoId}`} target="_blank" rel="noopener">Ver como fica</a></span></label>
+        <label className="aceite"><input type="checkbox" name="visivel" checked={visivel} onChange={(e) => setVisivel(e.target.checked)} /><span>Empresas com conta no GR Vagas podem ver meu perfil profissional: foto, cargo, habilidades, experiências e formação. Telefone, e-mail e endereço nunca aparecem. <a href={`${BASE}/candidatos/${inicial.candidatoId}`} target="_blank" rel="noopener">Ver como fica</a></span></label>
         <label className="aceite"><input type="checkbox" name="talentos" checked={talentos} onChange={(e) => setTalentos(e.target.checked)} /><span>Aceito aparecer no banco de talentos: empresas assinantes podem ver meu nome, contato, perfil e currículo e me chamar para vagas. Posso retirar este aceite quando quiser.</span></label>
         {estado.ok ? <p className="aviso aviso-ok" role="status">{estado.ok}</p> : null}
         {estado.erro ? <p className="aviso aviso-erro" role="alert">{estado.erro}</p> : null}

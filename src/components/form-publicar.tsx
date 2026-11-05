@@ -1,5 +1,6 @@
 'use client';
 
+import { BASE } from '@/lib/base';
 import { Selecao } from '@/components/selecao';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -49,7 +50,7 @@ export function FormPublicar({ logado, empresaNome, inicial, link, demo }: { log
     setErroColar(null);
     setLendo(true);
     try {
-      const r = await fetch('/api/ia/vaga', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ texto: colado }) });
+      const r = await fetch(`${BASE}/api/ia/vaga`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ texto: colado }) });
       const j = (await r.json()) as { vaga?: Partial<Valores> & { salario?: string }; erro?: string };
       if (!r.ok || !j.vaga) setErroColar(j.erro ?? 'Não foi possível ler o texto.');
       else {

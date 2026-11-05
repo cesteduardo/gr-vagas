@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import Link from 'next/link';
 import { acaoSair } from '@/app/acoes';
 import { usuarioAtual, ehAdmin } from '@/lib/auth/sessao';
@@ -46,11 +47,11 @@ export async function Topo() {
   let slug = '';
   if (empresa && u.empresaId) {
     const [e] = await db.select({ temLogo: sql<boolean>`${empresas.logo} is not null`, slug: empresas.slug }).from(empresas).where(eq(empresas.id, u.empresaId));
-    if (e?.temLogo) imagem = `/api/logo/${u.empresaId}`;
+    if (e?.temLogo) imagem = `${BASE}/api/logo/${u.empresaId}`;
     slug = e?.slug ?? '';
   } else {
     const [p] = await db.select({ temFoto: sql<boolean>`${perfis.foto} is not null` }).from(perfis).where(eq(perfis.usuarioId, u.id));
-    if (p?.temFoto) imagem = `/api/foto/${u.id}`;
+    if (p?.temFoto) imagem = `${BASE}/api/foto/${u.id}`;
   }
   const itens: ItemNav[] = empresa
     ? [{ href: '/painel', rotulo: 'Minhas vagas' }, { href: '/painel/conversas', rotulo: 'Conversas', contagem: novas }, { href: '/painel/talentos', rotulo: 'Banco de talentos' }]
@@ -76,8 +77,8 @@ export function Rodape() {
     <footer className="rodape">
       <Link href="/" className="rodape-marca" aria-label="GR Vagas, página inicial"><Simbolo tamanho={28} /><Palavra /></Link>
       <nav className="rodape-links" aria-label="Rodapé">
-        <Link href="/vagas">Vagas abertas</Link>
-        <Link href="/vagas/em/sao-jose-do-rio-preto">Vagas em Rio Preto</Link>
+        <Link href={`/vagas`}>Vagas abertas</Link>
+        <Link href={`/vagas/em/sao-jose-do-rio-preto`}>Vagas em Rio Preto</Link>
         <Link href="/anunciantes">Para empresas</Link>
         <Link href="/planos">Planos</Link>
         <Link href="/calculos/volta-do-almoco">Volta do almoço</Link>

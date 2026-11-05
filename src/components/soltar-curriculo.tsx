@@ -1,5 +1,6 @@
 'use client';
 
+import { BASE } from '@/lib/base';
 import { useRef, useState, type DragEvent } from 'react';
 import type { DadosCurriculo } from '@/lib/ia/curriculo';
 
@@ -19,7 +20,7 @@ export function SoltarCurriculo({ aoLer, titulo, detalhe }: { aoLer: (d: DadosCu
     const d = new FormData();
     d.set('arquivo', arquivo);
     try {
-      const r = await fetch('/api/ia/curriculo', { method: 'POST', body: d });
+      const r = await fetch(`${BASE}/api/ia/curriculo`, { method: 'POST', body: d });
       const j = (await r.json()) as { dados?: DadosCurriculo; vagas?: VagaSugerida[]; erro?: string };
       if (!r.ok || !j.dados) {
         setErro(j.erro ?? 'Não foi possível ler o arquivo.');

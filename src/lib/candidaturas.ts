@@ -1,3 +1,4 @@
+import { BASE } from '@/lib/base';
 import { and, asc, desc, eq, gt, isNull, or, sql } from 'drizzle-orm';
 import { abrirSessao } from '@/lib/auth/contas';
 import { ETAPAS, URL_SITE, type Etapa } from '@/lib/config';
@@ -207,7 +208,7 @@ export async function caixaDeEntrada(db: Banco, usuarioId: string, papel: Papel,
     vagaTitulo: l.vagaTitulo,
     etapa: l.etapa,
     nome: papel === 'empresa' ? l.candidatoNome : l.empresaNome,
-    imagem: papel === 'empresa' ? (l.temFoto ? `/api/foto/${l.candidatoId}` : null) : l.temLogo ? `/api/logo/${l.empresaId}` : null,
+    imagem: papel === 'empresa' ? (l.temFoto ? `${BASE}/api/foto/${l.candidatoId}` : null) : l.temLogo ? `${BASE}/api/logo/${l.empresaId}` : null,
     ultimaTexto: l.ultimaTexto,
     ultimaEm: new Date(l.ultimaEm),
     minha: l.ultimoAutor === usuarioId,

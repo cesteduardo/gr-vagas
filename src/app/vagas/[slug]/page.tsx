@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { EmpresaSelo } from '@/components/empresa-selo';
 import { notFound } from 'next/navigation';
 import { acaoCandidatarLogado, acaoSalvarVaga } from '@/app/acoes';
 import { FormCandidatura } from '@/components/form-candidatura';
@@ -62,11 +63,8 @@ export default async function PaginaVaga({ params }: P) {
       <main>
         <section className="heroi embrulho heroi-curto">
             <div className="vaga-empresa">
-              {v.temLogo ? <img src={`/api/logo/${v.empresaId}`} alt={`Logo de ${v.empresaNome}`} width={56} height={56} /> : null}
-              <div>
-                <Link href={`/empresas/${v.empresaSlug}`} style={{ fontWeight: 700 }}>{v.empresaNome}</Link>
-                {v.verificada ? null : <div className="nota">E-mail da empresa ainda não confirmado</div>}
-              </div>
+              <EmpresaSelo id={v.empresaId} nome={v.empresaNome} slug={v.empresaSlug} temLogo={v.temLogo} />
+              {v.verificada ? null : <div className="nota">E-mail da empresa ainda não confirmado</div>}
             </div>
             <h1>{v.titulo}</h1>
         </section>

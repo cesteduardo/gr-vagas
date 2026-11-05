@@ -132,7 +132,7 @@ export type VagaPublica = NonNullable<Awaited<ReturnType<typeof vagaPublica>>>;
 const colunasVaga = {
   id: vagas.id, slug: vagas.slug, titulo: vagas.titulo, area: vagas.area, contrato: vagas.contrato, modalidade: vagas.modalidade, cidadeSlug: vagas.cidadeSlug, cidade: vagas.cidade, uf: vagas.uf, pais: vagas.pais, moeda: vagas.moeda,
   salarioCentavos: vagas.salarioCentavos, descricao: vagas.descricao, requisitos: vagas.requisitos, beneficios: vagas.beneficios, tags: vagas.tags, estado: vagas.estado, destaque: vagas.destaque, arte: vagas.arte, publicadaEm: vagas.publicadaEm, expiraEm: vagas.expiraEm,
-  temImagem: sql<boolean>`${vagas.imagem} is not null`, empresaId: empresas.id, empresaNome: empresas.nome, empresaSlug: empresas.slug, empresaDescricao: empresas.descricao, temLogo: sql<boolean>`${empresas.logo} is not null`, verificada: sql<boolean>`${usuarios.emailConfirmadoEm} is not null`,
+  temImagem: sql<boolean>`${vagas.imagem} is not null`, temArtePropria: sql<boolean>`${vagas.artePropria} is not null`, empresaId: empresas.id, empresaNome: empresas.nome, empresaSlug: empresas.slug, empresaDescricao: empresas.descricao, temLogo: sql<boolean>`${empresas.logo} is not null`, verificada: sql<boolean>`${usuarios.emailConfirmadoEm} is not null`,
 };
 
 export async function vagaPublica(db: Banco, slug: string) {
@@ -212,6 +212,11 @@ export async function resolverDenuncia(db: Banco, id: string, encerrar: boolean)
 }
 
 export const rotuloEstado = (estado: string, expiraEm: Date, agora = new Date()) => (estado === 'encerrada' ? 'Encerrada' : estado === 'pausada' ? 'Pausada' : expiraEm <= agora ? 'Vencida' : 'Aberta');
+
+export async function guardarArtePropria(db: Banco, empresaId: string, vagaId: string, arte: Buffer | null, mime: string | null): Promise<boolean> {
+  const r = await db.update(vagas).set({ artePropria: arte, artePropriaMime: mime }).where(and(eq(vagas.id, vagaId), eq(vagas.empresaId, empresaId))).returning({ id: vagas.id });
+  return r.length > 0;
+}
 
 export async function guardarImagemVaga(db: Banco, empresaId: string, vagaId: string, imagem: Buffer | null, mime: string | null): Promise<boolean> {
   const r = await db.update(vagas).set({ imagem, imagemMime: mime }).where(and(eq(vagas.id, vagaId), eq(vagas.empresaId, empresaId))).returning({ id: vagas.id });

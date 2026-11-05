@@ -14,8 +14,57 @@ import { CampoArquivo } from './campo-arquivo';
 import { SeletorCor } from './seletor-cor';
 import { Segmentado } from './segmentado';
 
+const MODOS = [{ id: 'site' as const, nome: 'Arte do GR Vagas' }, { id: 'propria' as const, nome: 'Minha arte' }];
+
+// A empresa que já tem a arte pronta sobe aqui; a do GR Vagas continua guardada para voltar quando quiser.
+function ArtePropria({ url, slug, link, whatsapp, copiado, copiar, erro, enviar, tirar }: { url: string | null; slug: string; link: string; whatsapp: string; copiado: boolean; copiar: () => void; erro: string | null; enviar: (e: ChangeEvent<HTMLInputElement>) => void; tirar: () => void }) {
+  return (
+    <div className="editor-arte arte-propria">
+      <div className="editor-previa">
+        {url ? (
+          <img className="arte-propria-img" src={url} alt="Sua arte da vaga" />
+        ) : (
+          <div className="arte-propria-vazia">
+            <p><strong>Suba a arte que você já fez</strong></p>
+            <p className="nota">PNG, JPG ou WebP, até 8 MB. Qualquer formato: post, story ou retrato.</p>
+            <CampoArquivo id="arte-propria" accept="image/png,image/jpeg,image/webp" rotulo="Escolher a arte" onChange={enviar} />
+          </div>
+        )}
+        {url ? (
+          <div className="linha-botoes" style={{ justifyContent: 'center' }}>
+            <a className="btn" href={`${url.split('?')[0]}?baixar=1`} download={`${slug}-arte`}>Baixar minha arte</a>
+            <a className="btn btn-claro" href={`https://wa.me/?text=${encodeURIComponent(whatsapp)}`} target="_blank" rel="noopener">Enviar no WhatsApp</a>
+          </div>
+        ) : null}
+        <div className="copia">
+          <label className="so-leitor" htmlFor="link-vaga">Link da vaga</label>
+          <input id="link-vaga" type="text" readOnly value={link} />
+          <button type="button" className="btn btn-claro btn-peq" onClick={copiar}>{copiado ? 'Link copiado' : 'Copiar link'}</button>
+        </div>
+      </div>
+      <div className="editor-comandos">
+        {erro ? <p className="aviso aviso-erro" role="alert">{erro}</p> : null}
+        <section className="passo">
+          <h3><span>1</span>Sua arte pronta</h3>
+          <p className="leve">Ela fica guardada junto com a vaga, para baixar e postar quando quiser.</p>
+          {url ? (
+            <div className="linha-botoes">
+              <CampoArquivo id="arte-propria-trocar" accept="image/png,image/jpeg,image/webp" rotulo="Trocar a arte" onChange={enviar} />
+              <button type="button" className="btn btn-claro btn-peq" onClick={tirar}>Tirar minha arte</button>
+            </div>
+          ) : null}
+        </section>
+        <section className="passo">
+          <h3><span>2</span>Leve a pessoa até a vaga</h3>
+          <p className="leve">Ponha na arte ou na legenda o link da vaga. Assim quem vê o post chega direto na candidatura, e as respostas caem na sua caixa de conversas.</p>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 type Base = { titulo: string; empresa: string; cidade: string; contrato: string; modalidade: string; salario: string; link: string };
-type Props = { vagaId: string; slug: string; dados: Base; inicial: ConfigArte; marca: boolean; logoUrl: string | null; imagemUrl: string | null; beneficios: string; vaga: { cidade: string; uf: string; requisitos: string; area: string } };
+type Props = { vagaId: string; slug: string; dados: Base; inicial: ConfigArte; marca: boolean; logoUrl: string | null; imagemUrl: string | null; artePropriaUrl: string | null; beneficios: string; vaga: { cidade: string; uf: string; requisitos: string; area: string } };
 
 
 function Grupo<T extends string>({ rotulo, opcoes, valor, muda }: { rotulo: string; opcoes: readonly { id: T; nome: string }[]; valor: T; muda: (v: T) => void }) {
@@ -42,6 +91,8 @@ export function EditorArte(p: Props) {
   const [c, setC] = useState<ConfigArte>(p.inicial);
   const [logoUrl, setLogoUrl] = useState(p.logoUrl);
   const [imagemUrl, setImagemUrl] = useState(p.imagemUrl);
+  const [artePropria, setArtePropria] = useState(p.artePropriaUrl);
+  const [modo, setModo] = useState<'site' | 'propria'>(p.artePropriaUrl ? 'propria' : 'site');
   const [coresLogo, setCoresLogo] = useState<string[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
@@ -125,6 +176,26 @@ export function EditorArte(p: Props) {
 
   return (
     <div className="editor">
+      <div className="editor-modo">
+        <Segmentado rotulo="Qual arte usar" opcoes={MODOS} valor={modo} muda={setModo} />
+      </div>
+      {modo === 'propria' ? (
+        <ArtePropria
+          url={artePropria}
+          slug={p.slug}
+          link={p.dados.link}
+          whatsapp={legendaDaVaga(dadosLegenda, 'whatsapp')}
+          copiado={copiado === 'link'}
+          copiar={() => copiar(p.dados.link, 'link')}
+          erro={erro}
+          enviar={(e) => enviar(e, `/api/vagas/${p.vagaId}/arte-propria`, setArtePropria)}
+          tirar={async () => {
+            setErro(null);
+            const r = await fetch(`/api/vagas/${p.vagaId}/arte-propria`, { method: 'DELETE' }).catch(() => null);
+            if (r?.ok) { setArtePropria(null); setModo('site'); } else setErro('Não foi possível tirar a arte. Tente de novo.');
+          }}
+        />
+      ) : (
       <div className="editor-arte">
         <div className="editor-previa">
           <ArteCanvas rotulo={`Arte da vaga ${titulo}`} dados={dadosArte} opcoes={{ ...opcoesArte, modelo: c.modelo as ModeloId }} logoUrl={logoUrl} imagemUrl={imagemUrl} aoDesenhar={(el) => { canvas.current = el; }} />
@@ -251,6 +322,7 @@ export function EditorArte(p: Props) {
           </section>
         </div>
       </div>
+      )}
 
       <section className="painel-caixa legenda-bloco" aria-labelledby="t-legenda">
         <div className="cabeca-linha" style={{ marginBottom: 0 }}>

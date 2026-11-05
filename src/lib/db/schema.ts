@@ -78,6 +78,9 @@ export const vagas = pgTable('vagas', {
   arte: jsonb('arte').$type<ConfigArte>().notNull(),
   imagem: bytes('imagem'),
   imagemMime: text('imagem_mime'),
+  // Arte pronta, feita pela própria empresa; quando existe, é ela que vai para as redes.
+  artePropria: bytes('arte_propria'),
+  artePropriaMime: text('arte_propria_mime'),
   publicadaEm: quando('publicada_em').notNull().defaultNow(),
   expiraEm: quando('expira_em').notNull(),
 }, (t) => [index('vagas_lista').on(t.estado, t.expiraEm), index('vagas_empresa').on(t.empresaId)]);

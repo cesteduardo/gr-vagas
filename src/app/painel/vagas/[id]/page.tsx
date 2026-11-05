@@ -1,6 +1,7 @@
 import { Selecao } from '@/components/selecao';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AbasLinks } from '@/components/abas';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import { acaoDestaque, acaoEstadoVaga, acaoMudarEtapa } from '@/app/acoes';
@@ -47,6 +48,7 @@ export default async function VagaPainel({ params, searchParams }: { params: Pro
           marca={lim.marcaNaArte}
           logoUrl={e?.temLogo ? `/api/logo/${u.empresaId}` : null}
           imagemUrl={v.temImagem ? `/api/vagas/${v.id}/imagem` : null}
+          artePropriaUrl={v.temArtePropria ? `/api/vagas/${v.id}/arte-propria` : null}
           beneficios={v.beneficios}
           vaga={{ cidade: v.cidade, uf: v.uf, requisitos: v.requisitos, area: v.area }}
         />
@@ -107,11 +109,11 @@ export default async function VagaPainel({ params, searchParams }: { params: Pro
       </div>
       {s.erro ? <p className="aviso aviso-erro" role="alert" style={{ marginBottom: 16 }}>{s.erro.slice(0, 200)}</p> : null}
       {s.nova ? <p className="aviso aviso-ok" role="status" style={{ marginBottom: 16 }}>Vaga publicada. Baixe a arte e poste onde seus candidatos estão.</p> : null}
-      <nav className="abas" aria-label="Seções da vaga">
-        <Link href={`/painel/vagas/${v.id}`} aria-current={aba === 'candidatos' ? 'page' : undefined}>Candidatos</Link>
-        <Link href={`/painel/vagas/${v.id}?aba=arte`} aria-current={aba === 'arte' ? 'page' : undefined}>Arte</Link>
-        <Link href={`/painel/vagas/${v.id}?aba=editar`} aria-current={aba === 'editar' ? 'page' : undefined}>Editar</Link>
-      </nav>
+      <AbasLinks rotulo="Seções da vaga" itens={[
+        { href: `/painel/vagas/${v.id}`, nome: 'Candidatos', ativo: aba === 'candidatos' },
+        { href: `/painel/vagas/${v.id}?aba=arte`, nome: 'Arte', ativo: aba === 'arte' },
+        { href: `/painel/vagas/${v.id}?aba=editar`, nome: 'Editar', ativo: aba === 'editar' },
+      ]} />
       {await conteudo()}
     </>
   );

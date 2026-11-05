@@ -57,6 +57,13 @@
       "when": 1793895722390,
       "tag": "0007_anuncio_na_inicial",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793895986366,
+      "tag": "0008_arte_propria",
+      "breakpoints": true
     }
   ]
 }

@@ -1073,3 +1073,10 @@ textarea { max-width: 100%; }
 .admin-anuncio > .linha-botoes { flex: none; justify-content: flex-end; }
 @media (max-width: 720px) { .admin-anuncio { flex-wrap: wrap; } .admin-anuncio > div:nth-child(2) { flex-basis: calc(100% - 72px); } .admin-anuncio > .linha-botoes { flex-basis: 100%; justify-content: flex-start; } }
 .admin-anuncio .selecao { min-width: 120px; }
+
+/* Qual arte usar: a do GR Vagas ou a que a empresa já fez. */
+.editor-modo { display: flex; }
+.arte-propria-img { display: block; width: 100%; max-height: min(72vh, 720px); object-fit: contain; border-radius: var(--r-md); background: var(--superficie); box-shadow: var(--borda), var(--sombra); }
+.arte-propria-vazia { display: grid; justify-items: center; gap: 8px; padding: clamp(36px, 6vw, 64px) 24px; border: 1.5px dashed #c9d4e6; border-radius: var(--r-lg); background: var(--branco); text-align: center; }
+.arte-propria-vazia .arquivo { justify-content: center; margin-top: 8px; }
+.abas-secao { margin-bottom: 22px; }

@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
-import '@fontsource-variable/inter/wght.css';
+import '@fontsource-variable/inter/opsz.css';
 import { NOME, SITE_PUBLICO, URL_SITE } from '@/lib/config';
 import '@/styles/gr-vagas.css';
+import { ALTURA_HEROI, DOBRAS } from '@/lib/scripts-pagina';
+import { ScriptsCliente } from '@/components/scripts-cliente';
 
 const DESCRICAO = 'Vagas de emprego em São José do Rio Preto e região, sem cadastro. Solte seu currículo e veja as vagas que combinam, ou publique sua vaga com arte pronta para postar.';
 
@@ -20,8 +22,8 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, view
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR">
-      <body>{children}</body>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body>{children}<ScriptsCliente /><script dangerouslySetInnerHTML={{ __html: `${ALTURA_HEROI};${DOBRAS}` }} /></body>
     </html>
   );
 }

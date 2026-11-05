@@ -53,6 +53,20 @@ function Roleta({ itens, valor, muda, rotulo }: { itens: number[]; valor: number
     if (n !== undefined && n !== valor) muda(n);
   };
 
+  // Clique trava a roleta no item escolhido antes de qualquer outro evento de
+  // rolagem (o encaixe do scroll-snap, por exemplo) conseguir trocar o valor.
+  const escolher = (n: number) => {
+    const el = ref.current;
+    mexendo.current = false;
+    if (el) {
+      levando.current = true;
+      clearTimeout(pausa.current);
+      pausa.current = setTimeout(() => { levando.current = false; }, 400);
+      el.scrollTo({ top: itens.indexOf(n) * ALTURA, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    }
+    muda(n);
+  };
+
   const tecla = (e: KeyboardEvent<HTMLDivElement>) => {
     const passo = { ArrowDown: 1, ArrowUp: -1, PageDown: 5, PageUp: -5 }[e.key];
     let i = indice;
@@ -84,7 +98,7 @@ function Roleta({ itens, valor, muda, rotulo }: { itens: number[]; valor: number
           role="option"
           aria-selected={n === valor}
           className="roleta-item"
-          onClick={() => { mexendo.current = false; muda(n); }}
+          onClick={() => escolher(n)}
         >
           {dois(n)}
         </div>

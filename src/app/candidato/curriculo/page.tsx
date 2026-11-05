@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Imprimir } from '@/components/calculadoras';
 import { VisaoCurriculo } from '@/components/visao-curriculo';
 import { exigirCandidato } from '@/lib/auth/sessao';
 import { banco } from '@/lib/db/client';
@@ -19,9 +18,9 @@ export default async function CurriculoPronto() {
       <div className="cabeca-linha nao-imprimir" style={{ marginBottom: 0 }}>
         <div>
           <h1 className="titulo-painel">Currículo pronto</h1>
-          <p className="leve" style={{ marginTop: 6 }}>Montado com os dados do seu perfil, pronto para salvar em PDF e enviar.</p>
+          <p className="leve" style={{ marginTop: 6 }}>Montado com os dados do seu perfil. O PDF sai igual a esta folha, pronto para enviar.</p>
         </div>
-        {plus ? <Imprimir /> : <Link className="btn" href="/candidato/plano">Liberar no Plus</Link>}
+        {plus ? <a className="btn" href="/api/curriculo/pronto" download>Baixar PDF</a> : <Link className="btn" href="/candidato/plano">Liberar no Plus</Link>}
       </div>
       {p.titulo ? null : <p className="aviso nao-imprimir">Preencha o <Link href="/candidato/perfil">perfil</Link> para o currículo ficar completo.</p>}
       <div className={plus ? undefined : 'cv-previa'} aria-hidden={plus ? undefined : true}>

@@ -19,11 +19,13 @@ export default async function Entrar({ searchParams }: { searchParams: Promise<R
     <>
       <Topo />
       <Acesso titulo="Que bom ter você" cinza="de volta." itens={['Suas candidaturas e conversas num lugar só', 'Vagas que combinam com o seu perfil', 'Para empresas: candidatos, artes e planos']}>
-        <h1>Entrar</h1>
-        <p className="leve">Vale para quem procura emprego e para quem contrata.</p>
+        <div className="acesso-cabeca">
+          <h1>Entrar</h1>
+          <p className="leve">Vale para quem procura emprego e para quem contrata.</p>
+        </div>
         {SIMULADOR ? <EntrarTeste /> : null}
         <FormEntrar destino={destino} />
-        <details className="caixa-dobra">
+        <details className="acesso-dobra">
           <summary>Esqueci a senha ou nunca criei uma</summary>
           <p className="leve">Enviamos um link válido por 1 hora. Depois de entrar, crie ou troque a senha em Conta e senha.</p>
           <FormLink destino={destino} />

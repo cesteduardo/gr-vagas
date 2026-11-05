@@ -297,6 +297,14 @@ export function HorasExtras() {
   );
 }
 
-export function Imprimir() {
-  return <button type="button" className="btn" onClick={() => window.print()}>Salvar em PDF</button>;
+// O título da aba vira o nome do arquivo ao salvar em PDF; troca só durante a impressão.
+export function Imprimir({ arquivo }: { arquivo?: string }) {
+  const imprimir = () => {
+    const antes = document.title;
+    if (arquivo) document.title = arquivo;
+    const voltar = () => { document.title = antes; window.removeEventListener('afterprint', voltar); };
+    window.addEventListener('afterprint', voltar);
+    window.print();
+  };
+  return <button type="button" className="btn" onClick={imprimir}>Salvar em PDF</button>;
 }

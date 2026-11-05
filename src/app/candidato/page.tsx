@@ -17,7 +17,7 @@ export default async function InicioCandidato() {
   const novas = await naoLidas(db, u.id, 'candidato');
   const perfil = await perfilDe(db, u.id);
   const jaFoi = new Set(lista.map((c) => c.vagaSlug));
-  const sugeridas = (await vagasQueCombinam(db, { titulo: perfil.titulo, texto: perfil.resumo, cidadeSlug: perfil.cidadeSlug }, 8)).filter((v) => !jaFoi.has(v.slug)).slice(0, 4);
+  const sugeridas = (await vagasQueCombinam(db, { titulo: perfil.titulo, texto: perfil.resumo, cidadeSlug: perfil.cidadeSlug, cv: perfil.cv }, 8)).filter((v) => !jaFoi.has(v.slug)).slice(0, 4);
   const proximo = novas
     ? { texto: `A empresa respondeu: ${novas === 1 ? '1 mensagem nova' : `${novas} mensagens novas`}.`, href: `/conversas/${lista.find((c) => c.naoLidas)?.id ?? lista[0]?.id}`, acao: 'Abrir conversa' }
     : !perfil.titulo || !perfil.curriculoNome
@@ -53,11 +53,16 @@ export default async function InicioCandidato() {
           <ul className="cartoes">
             {sugeridas.map((v) => (
               <li key={v.id} className="cartao">
-                <div><h3><Link href={`/vagas/${v.slug}`} style={{ textDecoration: 'none' }}>{v.titulo}</Link></h3><small>{v.empresaNome}, {v.cidade}. {formatarSalario(v.salarioCentavos)}.</small></div>
+                <div><h3><Link href={`/vagas/${v.slug}`} style={{ textDecoration: 'none' }}>{v.titulo}</Link></h3><small>{v.empresaNome}, {v.cidade}. {formatarSalario(v.salarioCentavos)}.</small>{v.emComum.length ? <small className="combina-com">Combina com você em: {v.emComum.slice(0, 3).join(', ')}</small> : null}</div>
                 <Link className="btn btn-claro btn-peq" href={`/vagas/${v.slug}`}>Ver vaga</Link>
               </li>
             ))}
           </ul>
+        </>
+      ) : perfil.titulo ? (
+        <>
+          <h2 className="subtitulo-painel">Vagas para você</h2>
+          <div className="proximo"><p>Nenhuma vaga aberta combina com “{perfil.titulo}” agora. Crie um alerta e avisamos quando sair uma.</p><Link className="btn btn-claro btn-peq" href="/candidato/alertas">Criar alerta</Link></div>
         </>
       ) : null}
     </>

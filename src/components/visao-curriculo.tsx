@@ -1,44 +1,45 @@
+import '@fontsource/tinos/400.css';
+import '@fontsource/tinos/700.css';
 import { cidadePorSlug } from '@/lib/config';
 import { periodo, type Cv } from '@/lib/curriculo';
 import { formatarTelefone } from '@/lib/forms/validators';
+import { Simbolo } from './marca';
 
 const dataBr = (iso?: string) => (iso ? iso.split('-').reverse().join('/') : '');
 
-// O currículo no formato de sempre: dados pessoais, idiomas, formação e experiência.
-export function VisaoCurriculo({ nome, email, telefone, titulo, cidadeSlug, resumo, cv, foto }: { nome: string; email: string; telefone: string; titulo: string; cidadeSlug: string; resumo: string; cv: Cv; foto?: string | null }) {
+// Prévia do currículo pronto, igual ao PDF que sai de src/lib/curriculo-pdf.ts:
+// Times, nome centralizado em maiúsculas, seções numeradas em negrito sublinhado,
+// "ano - curso - instituição" e, no pé, a marca GR Vagas.
+export function VisaoCurriculo({ nome, email, telefone, titulo, cidadeSlug, resumo, cv }: { nome: string; email: string; telefone: string; titulo: string; cidadeSlug: string; resumo: string; cv: Cv; foto?: string | null }) {
   const cidade = cidadePorSlug(cidadeSlug);
   let n = 0;
-  const secao = (t: string) => `${(n += 1)}. ${t}`;
-  const dados = [
-    ['Estado civil', cv.estadoCivil],
+  const secao = (t: string) => <h3>{`${(n += 1)}.${t}`}</h3>;
+  const pessoais = [
+    ['Estado Civil', cv.estadoCivil],
     ['Nascimento', dataBr(cv.nascimento)],
-    ['Endereço', [cv.endereco, cidade ? `${cidade.nome} - ${cidade.uf}` : ''].filter(Boolean).join(', ')],
-    ['Telefone', formatarTelefone(telefone)],
-    ['E-mail', email],
-    ['Portfólio', cv.portfolio],
+    ['Endereço', cv.endereco],
   ].filter(([, v]) => v);
+  const objetivo = cv.objetivo || titulo;
   return (
     <article className="cv">
-      <header className={foto ? 'cv-topo' : undefined}>
-        {foto ? <img className="cv-foto" src={foto} alt={`Foto de ${nome}`} width={96} height={96} /> : null}
-        <div>
-          <h2>{nome}</h2>
-          {titulo ? <p className="cv-cargo">{titulo}</p> : null}
-          {cv.objetivo ? <p className="cv-contato">{cv.objetivo}</p> : null}
-        </div>
-      </header>
+      <h2>{nome.toLocaleUpperCase('pt-BR')}</h2>
       <section>
-        <h3>{secao('Dados pessoais')}</h3>
-        <dl className="cv-dados">{dados.map(([r, v]) => <div key={r}><dt>{r}</dt><dd>{v}</dd></div>)}</dl>
+        {secao('Dados pessoais')}
+        {pessoais.map(([r, v]) => <p key={r}>{r}: {v}</p>)}
+        {cidade ? <p>{cidade.nome} - {cidade.uf}</p> : null}
+        {telefone ? <p>Telefone: {formatarTelefone(telefone)}</p> : null}
+        <p>E-mail: {email}</p>
+        {cv.portfolio ? <p>Portfólio: {cv.portfolio.replace(/^https?:\/\//i, '')}</p> : null}
       </section>
-      {resumo ? <section><h3>{secao('Resumo profissional')}</h3><p>{resumo}</p></section> : null}
-      {cv.idiomas?.length ? <section><h3>{secao('Idiomas')}</h3><ul className="cv-lista">{cv.idiomas.map((i) => <li key={i.lingua}>{i.lingua} {i.nivel.toLowerCase()}</li>)}</ul></section> : null}
+      {objetivo ? <section>{secao('Objetivo')}<p>{objetivo}</p></section> : null}
+      {resumo ? <section>{secao('Resumo profissional')}<p>{resumo}</p></section> : null}
+      {cv.idiomas?.length ? <section>{secao('Idiomas')}{cv.idiomas.map((i, k) => <p key={k}>{i.lingua} {i.nivel.toLowerCase()}</p>)}</section> : null}
       {cv.formacao?.length ? (
         <section>
-          <h3>{secao('Formação acadêmica')}</h3>
-          {cv.formacao.map((f, i) => (
-            <div key={i} className="cv-item">
-              <p><strong>{[periodo(f.inicio, f.fim), f.curso, f.instituicao].filter(Boolean).join(' - ')}</strong></p>
+          {secao('Formação Acadêmica')}
+          {cv.formacao.map((f, k) => (
+            <div key={k} className="cv-item">
+              <p>{[periodo(f.inicio, f.fim), f.curso, f.instituicao].filter(Boolean).join(' - ')}</p>
               {f.descricao ? <p>{f.descricao}</p> : null}
             </div>
           ))}
@@ -46,16 +47,17 @@ export function VisaoCurriculo({ nome, email, telefone, titulo, cidadeSlug, resu
       ) : null}
       {cv.experiencias?.length ? (
         <section>
-          <h3>{secao('Experiência profissional')}</h3>
-          {cv.experiencias.map((e, i) => (
-            <div key={i} className="cv-item">
-              <p><strong>{[periodo(e.inicio, e.fim, e.atual), `${e.cargo}${e.empresa ? ` em ${e.empresa}` : ''}`].filter(Boolean).join(' - ')}</strong></p>
+          {secao('Experiência Profissional')}
+          {cv.experiencias.map((e, k) => (
+            <div key={k} className="cv-item cv-exp">
+              <p>{[periodo(e.inicio, e.fim, e.atual), `${e.cargo}${e.empresa ? ` em ${e.empresa}` : ''}`].filter(Boolean).join(' - ')}</p>
               {e.descricao ? <p>{e.descricao}</p> : null}
             </div>
           ))}
         </section>
       ) : null}
-      {cv.habilidades?.length ? <section><h3>{secao('Habilidades')}</h3><ul className="cv-etiquetas">{cv.habilidades.map((h) => <li key={h}>{h}</li>)}</ul></section> : null}
+      {cv.habilidades?.length ? <section>{secao('Habilidades')}<p>{cv.habilidades.join(', ')}.</p></section> : null}
+      <footer className="cv-marca"><Simbolo tamanho={11} /><b>GR Vagas</b><span>|</span>grbrands.com.br/vagas</footer>
     </article>
   );
 }

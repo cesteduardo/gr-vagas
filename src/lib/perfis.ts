@@ -1,3 +1,4 @@
+import { cruzar, type PerfilCruzamento, type VagaCruzamento } from '@/lib/combinar';
 import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
 import { cidadePorSlug, URL_SITE } from '@/lib/config';
 import { acessoCandidatura } from '@/lib/candidaturas';
@@ -168,20 +169,10 @@ export async function excluirConta(db: Banco, usuarioId: string): Promise<void> 
 }
 
 
-const VAZIAS = new Set(['de', 'da', 'do', 'das', 'dos', 'em', 'com', 'para', 'por', 'uma', 'como', 'vaga', 'sobre', 'anos', 'experiencia', 'trabalho']);
-const palavrasDe = (t: string) => new Set(normalizar(t).split(/[^a-z0-9]+/).filter((p) => p.length > 2 && !VAZIAS.has(p)));
-
 // Extra do Plus: quanto do que a vaga pede aparece no perfil.
-export function compatibilidade(perfil: { titulo: string; resumo: string }, vaga: { titulo: string; requisitos: string; area: string }): { porcentagem: number; emComum: string[] } | null {
-  const doPerfil = palavrasDe(`${perfil.titulo} ${perfil.resumo}`);
-  if (!doPerfil.size) return null;
-  const titulo = [...palavrasDe(vaga.titulo)];
-  const resto = [...palavrasDe(`${vaga.requisitos} ${vaga.area}`)].filter((p) => !titulo.includes(p));
-  const noTitulo = titulo.filter((p) => doPerfil.has(p));
-  const noResto = resto.filter((p) => doPerfil.has(p));
-  const parteTitulo = titulo.length ? noTitulo.length / titulo.length : 0;
-  const parteResto = resto.length ? noResto.length / resto.length : 0;
-  return { porcentagem: Math.round((parteTitulo * 0.7 + parteResto * 0.3) * 100), emComum: [...noTitulo, ...noResto].slice(0, 6) };
+export function compatibilidade(perfil: PerfilCruzamento, vaga: VagaCruzamento): { porcentagem: number; emComum: string[] } | null {
+  const c = cruzar(perfil, vaga);
+  return c ? { porcentagem: c.porcentagem, emComum: c.emComum } : null;
 }
 
 // Extra do Plus: primeira mensagem pronta, com os dados reais da pessoa e da vaga.

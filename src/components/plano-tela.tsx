@@ -24,7 +24,7 @@ export function PlanoTela({ tipo, plano, assinatura, erro, ok }: { tipo: 'contra
             <p className="leve">{p.resumo}</p>
             <ul>{p.itens.map((i) => <li key={i}>{i}</li>)}</ul>
             {p.preco > 0 && p.id !== plano ? (
-              SIMULADOR ? <form action={acaoAssinar}><input type="hidden" name="plano" value={p.id} /><button className="btn" style={{ width: '100%' }}>Assinar {p.nome} (simulado)</button></form> : <p className="nota">Assinatura disponível em breve.</p>
+              SIMULADOR ? <form action={acaoAssinar}><input type="hidden" name="plano" value={p.id} /><button className="btn" style={{ width: '100%' }}>Assinar {p.nome}</button><p className="plano-simulado">Demonstração: sem cobrança.</p></form> : <p className="nota">Assinatura disponível em breve.</p>
             ) : null}
           </article>
         ))}

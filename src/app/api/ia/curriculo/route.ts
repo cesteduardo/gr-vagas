@@ -1,4 +1,5 @@
 import { headers } from 'next/headers';
+import { ipDe } from '@/lib/ip';
 import { NextResponse } from 'next/server';
 import { dentroDoLimite } from '@/lib/auth/contas';
 import { banco } from '@/lib/db/client';
@@ -10,7 +11,7 @@ import { vagasQueCombinam } from '@/lib/vagas';
 // Lê e devolve. Nada fica guardado até a pessoa se candidatar.
 export async function POST(req: Request) {
   const db = await banco();
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'local';
+  const ip = ipDe(await headers());
   if (!(await dentroDoLimite(db, `leitura:${ip}`, 20, 60 * 60 * 1000))) return NextResponse.json({ erro: 'Muitas leituras em pouco tempo. Tente de novo mais tarde.' }, { status: 429 });
   const arquivo = (await req.formData()).get('arquivo');
   if (!(arquivo instanceof File)) return NextResponse.json({ erro: 'Escolha o seu currículo em PDF.' }, { status: 400 });

@@ -48,7 +48,7 @@ Toda decisão pendente (nome, preços, cidades) fica em `src/lib/config.ts`. Lis
 - **Pagamento:** implementar `ProvedorPagamento` (`src/lib/pagamentos/provedor.ts`) e ligar em `provedorAtivo()`. Fora do modo de demonstração, as telas dizem que a assinatura está para chegar.
 - **IA:** defina `ANTHROPIC_API_KEY`. Modelo padrão `claude-opus-5-5`, trocável em `MODELO_IA_VAGAS`. O caminho com a API real não foi testado com chave; sem chave, regras locais.
 - **E-mail:** preencher `SMTP_*`. O envio por SMTP não foi testado com conta real.
-- **Alertas:** chamar `POST /api/cron/alertas` de hora em hora, com `Authorization: Bearer $CRON_SEGREDO`.
+- **Alertas:** rodam de hora em hora dentro do servidor (`src/instrumentation.ts`), sozinhos na demonstração. Em produção, escolha um: `ALERTAS_AUTOMATICOS=1` num servidor sempre ligado, ou um cron externo chamando `POST /api/cron/alertas` com `Authorization: Bearer $CRON_SEGREDO` (ex.: `0 * * * * curl -fsS -X POST -H "Authorization: Bearer $CRON_SEGREDO" https://SEU_DOMINIO/api/cron/alertas`). Os dois juntos mandam e-mail em dobro.
 - **Moderação:** `ADMIN_EMAILS` define quem abre `/admin`.
 - **Arquivos:** logo e currículo ficam no Postgres. Bom para começar; com volume, mover para armazenamento de objetos.
 - **Instalação:** `.npmrc` usa `legacy-peer-deps` porque o npm 10.9 falha ao resolver esta árvore.

@@ -73,20 +73,23 @@ export function FormPublicar({ logado, empresaNome, inicial, link, demo }: { log
   return (
     <div className="publicar-grade">
       <div className="pilha">
-      {demo ? (
-        <div><button type="button" className="btn btn-claro btn-peq" onClick={() => setV((a) => ({ ...a, titulo: 'Auxiliar de cozinha', area: 'Restaurantes e alimentação', contrato: 'CLT', modalidade: 'Presencial', cidade: 'sao-jose-do-rio-preto', salarioTipo: 'valor', salario: '1.900,00', descricao: 'Preparar os alimentos, organizar a cozinha e manter tudo limpo durante o turno.', requisitos: 'Experiência em cozinha\nDisponibilidade aos fins de semana', beneficios: 'Vale-transporte\nRefeição no local\nFolga aos domingos', empresa: a.empresa || 'Restaurante Exemplo' }))}>Preencher com exemplo (demonstração)</button></div>
-      ) : null}
-      <div className="painel-caixa pilha" style={{ gap: 12 }}>
+      <section className="colar-cartao">
+        <div className="colar-cabeca">
+          <h2>Já tem o texto da vaga?</h2>
+          {demo ? <button type="button" className="btn btn-claro btn-peq" onClick={() => setV((a) => ({ ...a, titulo: 'Auxiliar de cozinha', area: 'Restaurantes e alimentação', contrato: 'CLT', modalidade: 'Presencial', cidade: 'sao-jose-do-rio-preto', salarioTipo: 'valor', salario: '1.900,00', descricao: 'Preparar os alimentos, organizar a cozinha e manter tudo limpo durante o turno.', requisitos: 'Experiência em cozinha\nDisponibilidade aos fins de semana', beneficios: 'Vale-transporte\nRefeição no local\nFolga aos domingos', empresa: a.empresa || 'Restaurante Exemplo' }))}>Usar exemplo</button> : null}
+        </div>
         <label className="campo">
-          <span>Já tem o texto da vaga? Cole aqui e a gente organiza</span>
+          <span>Cole a mensagem que você já usa e a gente separa cargo, salário, requisitos e benefícios.</span>
           <textarea value={colado} maxLength={8000} placeholder="Pode ser a mensagem que você manda nos grupos" onChange={(e) => setColado(e.target.value)} />
         </label>
         {erroColar ? <p className="erro" role="alert">{erroColar}</p> : null}
         <div><button type="button" className="btn btn-claro btn-peq" disabled={lendo || colado.trim().length < 10} onClick={organizar}>{lendo ? 'Organizando…' : 'Preencher com este texto'}</button></div>
-      </div>
-      <form ref={fm.ref} action={fm.despachar} onSubmit={fm.aoEnviar} noValidate className="pilha">
+      </section>
+      <form ref={fm.ref} action={fm.despachar} onSubmit={fm.aoEnviar} noValidate className="form-cartao">
         {fm.estado.erro ? <p className="aviso aviso-erro" role="alert">{fm.estado.erro}</p> : null}
         <AvisoLink estado={fm.estado} />
+        <fieldset className="form-secao">
+        <legend>A vaga</legend>
         <Campo rotulo="Cargo" erro={fm.erros.titulo} nome="titulo">
           <input type="text" name="titulo" maxLength={80} value={v.titulo} onChange={muda('titulo')} {...aria('titulo', fm.erros.titulo)} />
         </Campo>
@@ -119,19 +122,23 @@ export function FormPublicar({ logado, empresaNome, inicial, link, demo }: { log
           <label className="opcao"><input type="radio" name="salarioTipo" value="valor" checked={v.salarioTipo === 'valor'} onChange={muda('salarioTipo')} />Informar valor</label>
         </fieldset>
         {v.salarioTipo === 'valor' ? (
-          <Campo rotulo="Valor mensal em reais" erro={fm.erros.salario} nome="salario">
+          <div className="campo-surge"><Campo rotulo="Valor mensal em reais" erro={fm.erros.salario} nome="salario">
             <input type="text" name="salario" inputMode="decimal" placeholder="2.500,00" value={v.salario} onChange={(e) => setV((a) => ({ ...a, salario: e.target.value.replace(/[^\d.,]/g, '') }))} {...aria('salario', fm.erros.salario)} />
-          </Campo>
+          </Campo></div>
         ) : null}
+        </fieldset>
+        <fieldset className="form-secao">
+        <legend>O dia a dia</legend>
         <Campo rotulo="O que a pessoa vai fazer" erro={fm.erros.descricao} nome="descricao">
-          <textarea name="descricao" maxLength={4000} value={v.descricao} onChange={muda('descricao')} {...aria('descricao', fm.erros.descricao)} />
+          <textarea name="descricao" maxLength={4000} placeholder="Ex.: preparar os alimentos, organizar a cozinha e manter tudo limpo durante o turno." value={v.descricao} onChange={muda('descricao')} {...aria('descricao', fm.erros.descricao)} />
         </Campo>
         <Campo rotulo="Requisitos" erro={fm.erros.requisitos} nome="requisitos">
-          <textarea name="requisitos" maxLength={2000} value={v.requisitos} onChange={muda('requisitos')} {...aria('requisitos', fm.erros.requisitos)} />
+          <textarea name="requisitos" maxLength={2000} placeholder={'Um por linha. Ex.:\nExperiência em cozinha\nDisponibilidade aos fins de semana'} value={v.requisitos} onChange={muda('requisitos')} {...aria('requisitos', fm.erros.requisitos)} />
         </Campo>
         <Campo rotulo="Benefícios" erro={fm.erros.beneficios} nome="beneficios">
-          <textarea name="beneficios" maxLength={2000} value={v.beneficios} onChange={muda('beneficios')} {...aria('beneficios', fm.erros.beneficios)} />
+          <textarea name="beneficios" maxLength={2000} placeholder={'Um por linha. Ex.:\nVale-transporte\nRefeição no local'} value={v.beneficios} onChange={muda('beneficios')} {...aria('beneficios', fm.erros.beneficios)} />
         </Campo>
+        </fieldset>
         <button className="btn" disabled={fm.pendente}>{fm.pendente ? 'Publicando…' : 'Publicar e gerar a arte'}</button>
       </form>
       </div>

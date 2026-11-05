@@ -1,3 +1,5 @@
+import { ordenarPorCombinacao } from '@/lib/combinar';
+import type { Cv } from '@/lib/curriculo';
 import { randomBytes } from 'node:crypto';
 import { and, count, desc, eq, gt, isNotNull, sql } from 'drizzle-orm';
 import { abrirSessao } from '@/lib/auth/contas';
@@ -229,22 +231,9 @@ export async function empresasDoLetreiro(db: Banco, agora = new Date()) {
     .limit(40);
 }
 
-const PALAVRAS_VAZIAS = new Set(['de', 'da', 'do', 'das', 'dos', 'em', 'e', 'a', 'o', 'com', 'para', 'por', 'um', 'uma', 'na', 'no', 'anos', 'experiencia', 'trabalho', 'empresa', 'sao', 'jose', 'rio', 'preto']);
-const palavras = (t: string) => normalizar(t).split(/[^a-z0-9]+/).filter((p) => p.length > 2 && !PALAVRAS_VAZIAS.has(p));
-
-// Ordena as vagas abertas pelo quanto combinam com o currículo. Compara palavras
-// inteiras: "rio" não pode combinar com "estagiário".
-export async function vagasQueCombinam(db: Banco, d: { titulo?: string; texto: string; cidadeSlug?: string }, quantas = 6) {
-  const doTitulo = new Set(palavras(d.titulo ?? ''));
-  const doTexto = new Set(palavras(d.texto));
-  const { itens } = await buscarVagas(db, {});
-  const pontuadas = itens.map((v) => {
-    const noTitulo = new Set(palavras(v.titulo));
-    const noResto = new Set(palavras(`${v.area} ${v.descricao} ${v.requisitos}`));
-    let pontos = d.cidadeSlug && v.cidadeSlug === d.cidadeSlug ? 2 : 0;
-    for (const p of noTitulo) pontos += doTitulo.has(p) ? 20 : doTexto.has(p) ? 8 : 0;
-    for (const p of noResto) pontos += doTitulo.has(p) ? 3 : doTexto.has(p) ? 1 : 0;
-    return { v, pontos };
-  });
-  return pontuadas.sort((a, b) => b.pontos - a.pontos).slice(0, quantas).map((p) => p.v);
+// Ordena as vagas abertas pelo quanto combinam com o perfil e deixa de fora as
+// que não combinam. Olha todas as vagas abertas, não só a primeira página.
+export async function vagasQueCombinam(db: Banco, d: { titulo?: string; texto: string; cidadeSlug?: string; cv?: Cv }, quantas = 6) {
+  const todas = await db.select(colunasVaga).from(vagas).innerJoin(empresas, eq(empresas.id, vagas.empresaId)).innerJoin(usuarios, eq(usuarios.id, empresas.donoId)).where(condicoesBusca({})).orderBy(desc(vagas.destaque), desc(vagas.publicadaEm)).limit(500);
+  return ordenarPorCombinacao({ titulo: d.titulo ?? '', resumo: d.texto, cidadeSlug: d.cidadeSlug, cv: d.cv }, todas, quantas);
 }

@@ -4,16 +4,10 @@ import { FaixaArtes } from '@/components/heroi-arte';
 import { Rodape, Topo } from '@/components/moldura';
 import { PortaEmpresa } from '@/components/portas';
 import { Hero, Perguntas } from '@/components/blocos';
+import { OndeAparece } from '@/components/onde-aparece';
 import { PLANOS_EMPRESA, precoEmReais, URL_SITE } from '@/lib/config';
 
 export const metadata: Metadata = { title: 'Para empresas: anuncie sua vaga em Rio Preto', description: 'Anuncie vagas em São José do Rio Preto e região: arte personalizada com QR Code, destaque na página inicial e candidatos num lugar só. Comece grátis.', alternates: { canonical: '/anunciantes' } };
-
-const ONDE = [
-  ['Carrossel de vagas', 'Sua vaga passa na página inicial, na frente de quem entra procurando emprego. Vagas em destaque vêm primeiro.'],
-  ['Letreiro de empresas', 'O nome e o logo da sua empresa passam na página inicial. Um toque leva às suas vagas.'],
-  ['Busca e cidades', 'A vaga aparece na busca, na página da cidade e na página da sua empresa.'],
-  ['Onde você postar', 'Instagram, Status, grupos e até impressa. O QR Code traz o candidato direto para você.'],
-];
 
 const FACILITA = [
   ['Cole o texto que você já usa', 'A mensagem que vai nos grupos vira uma vaga organizada, com cargo, salário, requisitos e benefícios.'],
@@ -44,9 +38,7 @@ export default function Anunciantes() {
           </section>
           <section className="secao embrulho">
             <div className="secao-cabeca"><h2>Onde sua vaga <em>aparece</em></h2></div>
-            <ul className="grade-onde">
-              {ONDE.map(([t, d], i) => <li key={t} className={`tom-${i % 4}`}><h3>{t}</h3><p>{d}</p></li>)}
-            </ul>
+            <OndeAparece link={`${URL_SITE}/vagas`} />
           </section>
           <section className="secao embrulho" id="planos">
             <div className="secao-cabeca">

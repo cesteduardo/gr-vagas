@@ -3,6 +3,11 @@ export const NOME = 'GR Vagas';
 
 export const URL_SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:4820').replace(/\/$/, '');
 
+// Link de acesso por e-mail só em https fora da demonstração: em http o token viajaria aberto.
+export function urlSiteSegura(): boolean {
+  return URL_SITE.startsWith('https://') || process.env.NODE_ENV !== 'production' || process.env.SIMULADOR === '1';
+}
+
 // Enquanto SITE_PUBLICO não for 1, nada é indexado: o produto não está lançado.
 export const SITE_PUBLICO = process.env.SITE_PUBLICO === '1';
 

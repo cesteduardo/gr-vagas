@@ -4,10 +4,11 @@ import { revalidatePath } from 'next/cache';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { EstadoForm } from '@/components/formulario-base';
-import { abrirSessao, criarConta, definirSenha, destinoSeguro, entrarComSenha, pedirLink, usarLink } from '@/lib/auth/contas';
+import { abrirSessao, criarConta, definirSenha, dentroDoLimite, destinoSeguro, entrarComSenha, pedirLink, usarLink } from '@/lib/auth/contas';
+import { ipDe } from '@/lib/ip';
 import { exigirAdmin, exigirCandidato, exigirContratante, exigirUsuario, gravarCookieSessao, sairDaSessao, usuarioAtual } from '@/lib/auth/sessao';
 import { avisarNovaCandidatura, candidatarLogado, enviarMensagem, mudarEtapa } from '@/lib/candidaturas';
-import { cidadePorSlug, SIMULADOR, URL_SITE } from '@/lib/config';
+import { cidadePorSlug, SIMULADOR, URL_SITE, urlSiteSegura } from '@/lib/config';
 import { banco } from '@/lib/db/client';
 import { empresas, usuarios, vagas, type ConfigArte } from '@/lib/db/schema';
 import { enviarEmail } from '@/lib/email';
@@ -24,12 +25,23 @@ import { eq } from 'drizzle-orm';
 
 const texto = (f: FormData, n: string) => String(f.get(n) ?? '');
 
+// Limites por IP e por conta, contados no banco (valem com mais de uma instância).
+const ipAtual = async () => ipDe(await headers());
+const HORA = 60 * 60 * 1000;
+const limiteIp = async (acao: string, maximo: number, janelaMs = HORA) => dentroDoLimite(await banco(), `${acao}:ip:${await ipAtual()}`, maximo, janelaMs);
+const limiteConta = async (acao: string, usuarioId: string, maximo: number, janelaMs = HORA) => dentroDoLimite(await banco(), `${acao}:u:${usuarioId}`, maximo, janelaMs);
+const MUITOS = 'Muitos pedidos em pouco tempo. Aguarde alguns minutos e tente de novo.';
+
 
 
 const camposVaga = (f: FormData): CamposVaga => ({ titulo: texto(f, 'titulo'), area: texto(f, 'area'), contrato: texto(f, 'contrato'), modalidade: texto(f, 'modalidade'), cidade: texto(f, 'cidade'), salarioTipo: texto(f, 'salarioTipo'), salario: texto(f, 'salario'), descricao: texto(f, 'descricao'), requisitos: texto(f, 'requisitos'), beneficios: texto(f, 'beneficios'), tags: f.getAll('tags').map(String) });
 
 // Envia o link de acesso. Em demonstração ele também volta para a tela, sem e-mail de verdade.
 async function mandarLink(email: string, destino: string, assunto: string, confirmaSenha = false): Promise<{ limite: boolean; link?: string; falhou?: boolean }> {
+  if (!urlSiteSegura()) {
+    console.error('Link de acesso bloqueado: NEXT_PUBLIC_SITE_URL precisa começar com https:// em produção.');
+    return { limite: false, falhou: true };
+  }
   const r = await pedirLink(await banco(), email, destino, confirmaSenha);
   if (!r.ok) return { limite: true };
   if (!r.token) return { limite: false };
@@ -47,6 +59,7 @@ export async function acaoEntrar(_: EstadoForm, f: FormData): Promise<EstadoForm
   const email = texto(f, 'email');
   const erro = validarEmail(email);
   if (erro) return { erros: { email: erro } };
+  if (!(await limiteIp('link', 20, 15 * 60 * 1000))) return { erro: MUITOS };
   const r = await mandarLink(email, destinoSeguro(texto(f, 'destino'), '/entrar'), 'Seu link de acesso ao GR Vagas');
   if (r.limite) return { erro: 'Muitos pedidos para este e-mail. Aguarde 15 minutos e tente de novo.' };
   if (r.falhou) return { erro: 'Não foi possível enviar o e-mail agora. Tente de novo em alguns minutos.' };
@@ -61,6 +74,7 @@ export async function acaoEntrarSenha(_: EstadoForm, f: FormData): Promise<Estad
   if (erroEmail) erros.email = erroEmail;
   if (!senha) erros.senha = 'Informe a senha.';
   if (Object.keys(erros).length) return { erros };
+  if (!(await limiteIp('entrar', 40, 15 * 60 * 1000))) return { erro: MUITOS };
   const r = await entrarComSenha(await banco(), email, senha);
   if (!r.ok) return { erro: r.erro };
   await gravarCookieSessao(r.sessao);
@@ -78,6 +92,7 @@ export async function acaoCriarConta(_: EstadoForm, f: FormData): Promise<Estado
   const erroEmpresa = tipo === 'contratante' ? errosEmpresa(empresa) : null;
   if (erroEmpresa) erros.empresa = erroEmpresa;
   if (Object.keys(erros).length) return { erros };
+  if (!(await limiteIp('conta', 20))) return { erro: MUITOS };
   const n = pessoaNormalizada(pessoa);
   const db = await banco();
   const r = await criarConta(db, { tipo, ...n, senha, empresa });
@@ -117,6 +132,7 @@ export async function acaoPublicar(_: EstadoForm, f: FormData): Promise<EstadoFo
   if (!u?.empresaId) return { erro: 'Para publicar, entre com a conta da empresa.' };
   const { dados, erros } = validarVaga(camposVaga(f));
   if (!dados) return { erros };
+  if (!(await limiteConta('publicar', u.id, 30))) return { erro: MUITOS };
   const r = await publicarVaga(await banco(), u.id, u.empresaId, dados);
   if (!r.ok) return { erro: r.erro };
   redirect(`/painel/vagas/${r.vagaId}?aba=arte&nova=1`);
@@ -142,6 +158,7 @@ export async function acaoCandidatar(_: EstadoForm, f: FormData): Promise<Estado
   if (Object.keys(erros).length) return { erros };
   const vagaId = texto(f, 'vagaId');
   if (!/^[0-9a-f-]{36}$/i.test(vagaId)) return { erro: 'Escolha uma vaga.' };
+  if (!(await limiteIp('conta', 20))) return { erro: MUITOS };
   const db = await banco();
   const [v] = await db.select({ slug: vagas.slug, estado: vagas.estado, expiraEm: vagas.expiraEm }).from(vagas).where(eq(vagas.id, vagaId));
   if (!v || !vagaAceitaCandidatura(v)) return { erro: 'Esta vaga não recebe mais candidaturas.' };
@@ -170,6 +187,7 @@ export async function acaoCandidatar(_: EstadoForm, f: FormData): Promise<Estado
 
 export async function acaoCandidatarLogado(f: FormData) {
   const u = await exigirUsuario();
+  if (!(await limiteConta('candidatura', u.id, 40))) redirect('/vagas?limite=1');
   const db = await banco();
   const vagaId = texto(f, 'vagaId');
   const r = await candidatarLogado(db, u, vagaId);
@@ -187,8 +205,7 @@ export async function acaoSalvarVaga(f: FormData) {
 export async function acaoDenunciar(_: EstadoForm, f: FormData): Promise<EstadoForm> {
   const motivo = texto(f, 'motivo');
   if (motivo.trim().length < 5) return { erros: { motivo: 'Conte em poucas palavras o que há de errado.' } };
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'local';
-  const ok = await denunciar(await banco(), texto(f, 'vagaId'), motivo, ip);
+  const ok = await denunciar(await banco(), texto(f, 'vagaId'), motivo, await ipAtual());
   return ok ? { ok: true } : { erro: 'Muitas denúncias em pouco tempo. Tente de novo mais tarde.' };
 }
 
@@ -202,6 +219,7 @@ export async function acaoMudarEtapa(f: FormData) {
 
 export async function acaoEnviarMensagem(candidaturaId: string, conteudo: string): Promise<{ ok: boolean; erro?: string }> {
   const u = await exigirUsuario();
+  if (!(await limiteConta('mensagem', u.id, 60, 10 * 60 * 1000))) return { ok: false, erro: MUITOS };
   return enviarMensagem(await banco(), { candidaturaId, autorId: u.id, texto: conteudo });
 }
 

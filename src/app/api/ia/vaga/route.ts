@@ -1,11 +1,12 @@
 import { headers } from 'next/headers';
+import { ipDe } from '@/lib/ip';
 import { NextResponse } from 'next/server';
 import { dentroDoLimite } from '@/lib/auth/contas';
 import { banco } from '@/lib/db/client';
 import { lerVaga } from '@/lib/ia/vaga';
 
 export async function POST(req: Request) {
-  const ip = (await headers()).get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'local';
+  const ip = ipDe(await headers());
   if (!(await dentroDoLimite(await banco(), `leitura-vaga:${ip}`, 20, 60 * 60 * 1000))) return NextResponse.json({ erro: 'Muitas leituras em pouco tempo. Tente de novo mais tarde.' }, { status: 429 });
   const corpo = (await req.json().catch(() => null)) as { texto?: unknown } | null;
   const texto = typeof corpo?.texto === 'string' ? corpo.texto.trim() : '';

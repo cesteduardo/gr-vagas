@@ -8,15 +8,28 @@ import { acaoCriarConta, acaoDefinirSenha, acaoDenunciar, acaoEntrar, acaoEntrar
 import { REGRAS_SENHA, validarEmail, validarNome, validarSenha, validarTelefone } from '@/lib/forms/validators';
 import { AvisoLink, aria, Campo, CampoEmail, CampoNome, CampoTelefone, pega, useFormulario } from './formulario-base';
 
-function CampoSenha({ erro, nova }: { erro?: string; nova?: boolean }) {
-  const [v, setV] = useState('');
+// Senha com o olho dentro do campo: mostrar e esconder sem tirar a pessoa do lugar.
+function EntradaSenha({ valor, muda, nova, erro }: { valor: string; muda: (v: string) => void; nova?: boolean; erro?: string }) {
   const [ver, setVer] = useState(false);
   return (
+    <span className="senha-campo">
+      <input type={ver ? 'text' : 'password'} name="senha" autoComplete={nova ? 'new-password' : 'current-password'} value={valor} onChange={(e) => muda(e.target.value)} {...aria('senha', erro)} />
+      <button type="button" className="senha-olho" aria-pressed={ver} aria-label={ver ? 'Esconder senha' : 'Mostrar senha'} onClick={() => setVer((a) => !a)}>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+          <circle cx="12" cy="12" r="3" />
+          <path className="senha-risco" d="M4 4l16 16" />
+        </svg>
+      </button>
+    </span>
+  );
+}
+
+function CampoSenha({ erro, nova }: { erro?: string; nova?: boolean }) {
+  const [v, setV] = useState('');
+  return (
     <Campo rotulo="Senha" erro={erro} nome="senha">
-      <span className="senha-linha">
-        <input type={ver ? 'text' : 'password'} name="senha" autoComplete={nova ? 'new-password' : 'current-password'} value={v} onChange={(e) => setV(e.target.value)} {...aria('senha', erro)} />
-        <button type="button" className="btn btn-claro btn-peq" aria-pressed={ver} onClick={() => setVer((a) => !a)}>{ver ? 'Ocultar' : 'Mostrar'}</button>
-      </span>
+      <EntradaSenha valor={v} muda={setV} nova={nova} erro={erro} />
       {nova ? <span className="nota">{REGRAS_SENHA.map((r) => r.rotulo).join(', ')}.</span> : null}
     </Campo>
   );
@@ -25,7 +38,7 @@ function CampoSenha({ erro, nova }: { erro?: string; nova?: boolean }) {
 export function FormEntrar({ destino }: { destino: string }) {
   const fm = useFormulario(acaoEntrarSenha, (f) => ({ email: validarEmail(pega(f, 'email')), senha: pega(f, 'senha') ? null : 'Informe a senha.' }));
   return (
-    <form ref={fm.ref} action={fm.despachar} onSubmit={fm.aoEnviar} noValidate className="pilha painel-caixa">
+    <form ref={fm.ref} action={fm.despachar} onSubmit={fm.aoEnviar} noValidate className="pilha form-entrar">
       {fm.estado.erro ? <p className="aviso aviso-erro" role="alert">{fm.estado.erro}</p> : null}
       <input type="hidden" name="destino" value={destino} />
       <CampoEmail erro={fm.erros.email} />
@@ -64,7 +77,6 @@ const TIPOS = [
 export function FormCriarConta({ tipoInicial, destino = '' }: { tipoInicial: 'candidato' | 'contratante'; destino?: string }) {
   const [tipo, setTipo] = useState(tipoInicial);
   const [senha, setSenha] = useState('');
-  const [ver, setVer] = useState(false);
   const fm = useFormulario(acaoCriarConta, (f) => ({
     nome: validarNome(pega(f, 'nome')),
     email: validarEmail(pega(f, 'email')),
@@ -88,17 +100,14 @@ export function FormCriarConta({ tipoInicial, destino = '' }: { tipoInicial: 'ca
           </label>
         ))}
       </fieldset>
-      <div className="painel-caixa form-conta-campos">
+      <div className="form-conta-campos">
         {tipo === 'contratante' ? <div className="inteiro"><Campo rotulo="Nome da empresa" erro={fm.erros.empresa} nome="empresa"><input type="text" name="empresa" maxLength={80} autoComplete="organization" {...aria('empresa', fm.erros.empresa)} /></Campo></div> : null}
         <CampoNome erro={fm.erros.nome} />
         <CampoTelefone erro={fm.erros.telefone} />
         <div className="inteiro"><CampoEmail erro={fm.erros.email} /></div>
         <div className="inteiro">
           <Campo rotulo="Crie uma senha" erro={fm.erros.senha} nome="senha">
-            <span className="senha-linha">
-              <input type={ver ? 'text' : 'password'} name="senha" autoComplete="new-password" value={senha} onChange={(e) => setSenha(e.target.value)} {...aria('senha', fm.erros.senha)} />
-              <button type="button" className="btn btn-claro btn-peq" aria-pressed={ver} onClick={() => setVer((a) => !a)}>{ver ? 'Ocultar' : 'Mostrar'}</button>
-            </span>
+            <EntradaSenha valor={senha} muda={setSenha} nova erro={fm.erros.senha} />
           </Campo>
           <Regras senha={senha} />
         </div>
@@ -155,14 +164,14 @@ export { CampoEmail };
 export function EntrarTeste() {
   const fm = useFormulario(acaoEntrarSenha, () => ({}));
   return (
-    <div className="painel-caixa teste-contas">
-      <p><strong>Contas de teste</strong> <span className="nota">senha teste1234</span></p>
-      <div className="linha-botoes">
-        {[['empresa@teste.com', 'Entrar como empresa'], ['candidato@teste.com', 'Entrar como candidato']].map(([email, rotulo]) => (
+    <div className="teste-contas">
+      <p><strong>Demonstração</strong> <span className="nota">entre com uma conta de teste</span></p>
+      <div className="teste-botoes">
+        {[['empresa@teste.com', 'Empresa'], ['candidato@teste.com', 'Candidato']].map(([email, rotulo]) => (
           <form key={email} action={fm.despachar}>
             <input type="hidden" name="email" value={email} />
             <input type="hidden" name="senha" value="teste1234" />
-            <button className="btn btn-claro">{rotulo}</button>
+            <button className="btn btn-claro btn-peq">{rotulo}</button>
           </form>
         ))}
       </div>

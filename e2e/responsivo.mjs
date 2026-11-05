@@ -19,7 +19,7 @@ const medir = (p) =>
       .filter((e) => {
         const r = e.getBoundingClientRect();
         if (!r.width || !r.height) return false;
-        if (e.closest('.so-leitor,.rapidas,.carrossel-trilho-apple,.segmentado-trilha,.roleta,.letreiro,.gaveta,.veu')) return false;
+        if (e.closest('.so-leitor,.rapidas,.carrossel-trilho-apple,.segmentado-trilha,.roleta,.letreiro,.onde-palco,.gaveta,.veu')) return false;
         return r.right > largura + 1 || r.left < -1;
       })
       .slice(0, 3)

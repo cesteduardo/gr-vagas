@@ -5,7 +5,8 @@ import { Rodape, Topo } from '@/components/moldura';
 import { PortaEmpresa } from '@/components/portas';
 import { Hero, Perguntas } from '@/components/blocos';
 import { OndeAparece } from '@/components/onde-aparece';
-import { PLANOS_EMPRESA, precoEmReais, URL_SITE } from '@/lib/config';
+import { CartaoPlano } from '@/components/cartao-plano';
+import { PLANOS_EMPRESA, URL_SITE } from '@/lib/config';
 
 export const metadata: Metadata = { title: 'Para empresas: anuncie sua vaga em Rio Preto', description: 'Anuncie vagas em São José do Rio Preto e região: arte personalizada com QR Code, destaque na página inicial e candidatos num lugar só. Comece grátis.', alternates: { canonical: '/anunciantes' } };
 
@@ -45,15 +46,9 @@ export default function Anunciantes() {
               <h2>Planos</h2>
               <p className="secao-nota">Toda a personalização da arte é grátis. Sem fidelidade: cancele quando quiser.</p>
             </div>
-            <div className="grade-planos" style={{ marginTop: 0 }}>
+            <div className="grade-planos planos-3" style={{ marginTop: 0 }}>
               {PLANOS_EMPRESA.map((p) => (
-                <article key={p.id} className={`plano${p.id === 'essencial' ? ' plano-forte' : ''}`}>
-                  <h3>{p.nome}</h3>
-                  <div className="plano-preco">{p.preco ? precoEmReais(p.preco) : 'R$ 0'}<small> por mês</small></div>
-                  <p className="leve">{p.resumo}</p>
-                  <ul>{p.itens.map((i) => <li key={i}>{i}</li>)}</ul>
-                  <Link className="btn" href="/publicar">Publicar vaga</Link>
-                </article>
+                <CartaoPlano key={p.id} plano={p} forte={p.id === 'essencial'} etiqueta={p.id === 'essencial' ? 'Mais escolhido' : undefined} acao={<Link className={`btn${p.id === 'essencial' ? '' : ' btn-claro'}`} href={p.preco ? '/painel/plano' : '/publicar'}>{p.preco ? `Assinar ${p.nome}` : 'Publicar grátis'}</Link>} />
               ))}
             </div>
           </section>

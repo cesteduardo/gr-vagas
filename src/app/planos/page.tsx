@@ -2,27 +2,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Folha, Hero } from '@/components/blocos';
 import { Rodape, Topo } from '@/components/moldura';
-import { PLANOS_CANDIDATO, PLANOS_EMPRESA, precoEmReais } from '@/lib/config';
+import { AlternarPlanos } from '@/components/alternar-planos';
+import { CartaoPlano } from '@/components/cartao-plano';
+import { PLANOS_CANDIDATO, PLANOS_EMPRESA } from '@/lib/config';
 
 export const metadata: Metadata = { title: 'Planos para empresas e candidatos', description: 'Publique uma vaga grátis, com arte personalizada, e veja os planos para quem contrata todo mês. Para candidatos, pesquisar e se candidatar é sempre grátis.', alternates: { canonical: '/planos' } };
 
-function Grade({ planos, destaque, acao }: { planos: readonly { id: string; nome: string; preco: number; resumo: string; itens: string[] }[]; destaque: string; acao: { href: string; rotulo: string } }) {
-  return (
-    <div className="grade-planos">
-      {planos.map((p) => (
-        <article key={p.id} className={`plano${p.id === destaque ? ' plano-forte' : ''}`}>
-          <h3>{p.nome}</h3>
-          <div className="plano-preco">{p.preco ? precoEmReais(p.preco) : 'R$ 0'}<small> por mês</small></div>
-          <p className="leve">{p.resumo}</p>
-          <ul>{p.itens.map((i) => <li key={i}>{i}</li>)}</ul>
-          <Link className={`btn${p.id === destaque ? '' : ' btn-claro'}`} href={acao.href}>{acao.rotulo}</Link>
-        </article>
-      ))}
-    </div>
-  );
-}
-
-export default function Planos() {
+export default async function Planos({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const inicial = (await searchParams).para === 'candidato' ? 'candidato' : 'empresa';
   return (
     <>
       <Topo />
@@ -30,12 +17,36 @@ export default function Planos() {
         <Hero titulo="Comece grátis." cinza="Mude quando precisar." texto="Sem fidelidade: cancele quando quiser e use até o fim do período pago." />
         <Folha>
         <div className="secao embrulho">
-        <section><h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)' }}>Para quem contrata</h2><Grade planos={PLANOS_EMPRESA} destaque="essencial" acao={{ href: '/publicar', rotulo: 'Publicar vaga' }} /></section>
-        <section style={{ marginTop: 56 }}>
-          <h2 style={{ fontSize: 'clamp(26px, 3vw, 40px)' }}>Para quem procura emprego</h2>
-          <p className="leve" style={{ marginTop: 10, maxWidth: '62ch' }}>Nunca cobramos para ver vagas, se candidatar ou conversar com a empresa. Desconfie de quem cobrar para você concorrer a uma vaga.</p>
-          <Grade planos={PLANOS_CANDIDATO} destaque="" acao={{ href: '/vagas', rotulo: 'Ver vagas' }} />
-        </section>
+          <AlternarPlanos
+            inicial={inicial}
+            empresa={
+              <>
+                <div className="grade-planos planos-3">
+                  {PLANOS_EMPRESA.map((p) => (
+                    <CartaoPlano key={p.id} plano={p} forte={p.id === 'essencial'} etiqueta={p.id === 'essencial' ? 'Mais escolhido' : undefined} acao={p.preco ? <Link className={`btn${p.id === 'essencial' ? '' : ' btn-claro'}`} href="/painel/plano">Assinar {p.nome}</Link> : <Link className="btn btn-claro" href="/publicar">Publicar grátis</Link>} />
+                  ))}
+                </div>
+                <aside className="planos-extra">
+                  <div>
+                    <h3>Impulsione uma vaga</h3>
+                    <p>Ela aparece na tela inicial do GR Vagas, para quem chega procurando emprego. Peça pela própria vaga, no painel; vale para qualquer plano.</p>
+                  </div>
+                  <Link className="btn btn-claro btn-peq" href="/anunciantes">Saber mais</Link>
+                </aside>
+              </>
+            }
+            candidato={
+              <>
+                <p className="planos-aviso">Nunca cobramos para ver vagas, se candidatar ou conversar com a empresa. Desconfie de quem cobrar para você concorrer a uma vaga.</p>
+                <div className="grade-planos planos-2">
+                  {PLANOS_CANDIDATO.map((p) => (
+                    <CartaoPlano key={p.id} plano={p} forte={p.id === 'plus'} acao={p.preco ? <Link className="btn" href="/candidato/plano">Assinar {p.nome}</Link> : <Link className="btn btn-claro" href="/vagas">Ver vagas</Link>} />
+                  ))}
+                </div>
+              </>
+            }
+          />
+          <p className="planos-pagamento">Pague por Pix, boleto ou cartão.</p>
         </div>
         </Folha>
       </main>

@@ -91,7 +91,7 @@ export const LIMITES: Record<PlanoId, Limites> = {
 
 export const PLANOS_EMPRESA = [
   { id: 'gratis' as const, nome: 'Grátis', preco: 0, resumo: 'Para a próxima vaga da sua empresa.', itens: ['2 vagas abertas por vez', 'Arte com todas as cores, fontes e modelos', 'QR Code da vaga ou do seu WhatsApp', 'Candidatos e conversa sem limite', 'Marca do GR Vagas na arte'] },
-  { id: 'essencial' as const, nome: 'Essencial', preco: 49, resumo: 'Para quem contrata todo mês.', itens: ['6 vagas abertas por vez', 'Arte sem a marca do GR Vagas', '1 vaga em destaque no carrossel e na busca', 'Sua empresa no letreiro da página inicial'] },
+  { id: 'essencial' as const, nome: 'Essencial', preco: 49, resumo: 'Para quem contrata todo mês.', itens: ['6 vagas abertas por vez', 'Arte sem a marca do GR Vagas', '1 vaga em destaque no topo da busca', 'Candidatos e conversa sem limite'] },
   { id: 'profissional' as const, nome: 'Profissional', preco: 129, resumo: 'Para RHs e agências com várias vagas.', itens: ['30 vagas abertas por vez', 'Tudo do Essencial', '5 vagas em destaque', 'Banco de talentos'] },
 ];
 

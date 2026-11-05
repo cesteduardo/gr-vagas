@@ -1,5 +1,6 @@
 import { acaoAssinar, acaoCancelarPlano } from '@/app/acoes';
-import { planosDoTipo, precoEmReais, SIMULADOR, type PlanoId } from '@/lib/config';
+import { planosDoTipo, SIMULADOR, type PlanoId } from '@/lib/config';
+import { CartaoPlano } from './cartao-plano';
 import { formatarData } from '@/lib/texto';
 
 export function PlanoTela({ tipo, plano, assinatura, erro, ok }: { tipo: 'contratante' | 'candidato'; plano: PlanoId; assinatura: { estado: string; fimEm: Date } | null; erro?: string; ok?: boolean }) {
@@ -16,17 +17,17 @@ export function PlanoTela({ tipo, plano, assinatura, erro, ok }: { tipo: 'contra
           {assinatura.estado === 'ativa' ? <form action={acaoCancelarPlano}><button className="btn btn-claro btn-peq">Cancelar plano</button></form> : null}
         </div>
       ) : null}
-      <div className="grade-planos">
+      <div className={`grade-planos ${planos.length === 3 ? 'planos-3' : 'planos-2'}`}>
         {planos.map((p) => (
-          <article key={p.id} className={`plano${p.id === plano ? ' plano-forte' : ''}`}>
-            <h2 style={{ fontSize: '1.6rem' }}>{p.nome}{p.id === plano ? <span className="etiqueta">Seu plano</span> : null}</h2>
-            <div className="plano-preco">{p.preco ? precoEmReais(p.preco) : 'R$ 0'}<small> por mês</small></div>
-            <p className="leve">{p.resumo}</p>
-            <ul>{p.itens.map((i) => <li key={i}>{i}</li>)}</ul>
-            {p.preco > 0 && p.id !== plano ? (
+          <CartaoPlano
+            key={p.id}
+            plano={p}
+            forte={p.id === plano}
+            etiqueta={p.id === plano ? 'Seu plano' : undefined}
+            acao={p.preco > 0 && p.id !== plano ? (
               SIMULADOR ? <form action={acaoAssinar}><input type="hidden" name="plano" value={p.id} /><button className="btn" style={{ width: '100%' }}>Assinar {p.nome}</button><p className="plano-simulado">Demonstração: sem cobrança.</p></form> : <p className="nota">Assinatura disponível em breve.</p>
-            ) : null}
-          </article>
+            ) : undefined}
+          />
         ))}
       </div>
     </>

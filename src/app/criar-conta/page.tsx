@@ -18,9 +18,11 @@ export default async function CriarConta({ searchParams }: { searchParams: Promi
   return (
     <>
       <Topo />
-      <Acesso titulo="Comece em" cinza="um minuto." itens={['Sem formulário sem fim', 'Para se candidatar, nem precisa de conta: basta o currículo', 'Empresas publicam a primeira vaga grátis']}>
-        <h1>Criar conta</h1>
-        <p className="leve">Escolha o que você quer fazer e preencha o básico.</p>
+      <Acesso titulo="Comece em" cinza="um minuto." itens={['Só o básico: nome, WhatsApp e e-mail', 'Candidatura e conversa sempre grátis', 'Empresas têm 2 vagas abertas grátis']}>
+        <div className="acesso-cabeca">
+          <h1>Criar conta</h1>
+          <p className="leve">Escolha o que você quer fazer e preencha o básico.</p>
+        </div>
         <FormCriarConta tipoInicial={tipo} destino={destino} />
         <p className="leve acesso-rodape">Já tem conta? <Link href={destino ? `/entrar?destino=${encodeURIComponent(destino)}` : '/entrar'}>Entrar</Link></p>
       </Acesso>

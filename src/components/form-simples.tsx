@@ -3,17 +3,17 @@
 import Link from 'next/link';
 import { LinkLegal } from './legal';
 import { TextoPrivacidade, TextoTermos } from './textos-legais';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { acaoCriarConta, acaoDefinirSenha, acaoDenunciar, acaoEntrar, acaoEntrarSenha, acaoReenviar } from '@/app/acoes';
 import { REGRAS_SENHA, validarEmail, validarNome, validarSenha, validarTelefone } from '@/lib/forms/validators';
 import { AvisoLink, aria, Campo, CampoEmail, CampoNome, CampoTelefone, pega, useFormulario } from './formulario-base';
 
 // Senha com o olho dentro do campo: mostrar e esconder sem tirar a pessoa do lugar.
-function EntradaSenha({ valor, muda, nova, erro }: { valor: string; muda: (v: string) => void; nova?: boolean; erro?: string }) {
+function EntradaSenha({ valor, muda, nova, erro, id }: { valor: string; muda: (v: string) => void; nova?: boolean; erro?: string; id?: string }) {
   const [ver, setVer] = useState(false);
   return (
     <span className="senha-campo">
-      <input type={ver ? 'text' : 'password'} name="senha" autoComplete={nova ? 'new-password' : 'current-password'} value={valor} onChange={(e) => muda(e.target.value)} {...aria('senha', erro)} />
+      <input id={id} type={ver ? 'text' : 'password'} name="senha" autoComplete={nova ? 'new-password' : 'current-password'} value={valor} onChange={(e) => muda(e.target.value)} {...aria('senha', erro)} />
       <button type="button" className="senha-olho" aria-pressed={ver} aria-label={ver ? 'Esconder senha' : 'Mostrar senha'} onClick={() => setVer((a) => !a)}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
@@ -35,29 +35,53 @@ function CampoSenha({ erro, nova }: { erro?: string; nova?: boolean }) {
   );
 }
 
-export function FormEntrar({ destino }: { destino: string }) {
+function FormEntrar({ destino, email, aoEsquecer }: { destino: string; email: string; aoEsquecer: () => void }) {
   const fm = useFormulario(acaoEntrarSenha, (f) => ({ email: validarEmail(pega(f, 'email')), senha: pega(f, 'senha') ? null : 'Informe a senha.' }));
+  const [senha, setSenha] = useState('');
   return (
     <form ref={fm.ref} action={fm.despachar} onSubmit={fm.aoEnviar} noValidate className="pilha form-entrar">
       {fm.estado.erro ? <p className="aviso aviso-erro" role="alert">{fm.estado.erro}</p> : null}
       <input type="hidden" name="destino" value={destino} />
-      <CampoEmail erro={fm.erros.email} />
-      <CampoSenha erro={fm.erros.senha} />
+      <CampoEmail erro={fm.erros.email} inicial={email} />
+      <div className="campo">
+        <span className="campo-topo"><label htmlFor="senha-entrar">Senha</label><button type="button" className="link-acao" onClick={aoEsquecer}>Esqueci a senha</button></span>
+        <EntradaSenha id="senha-entrar" valor={senha} muda={setSenha} erro={fm.erros.senha} />
+        {fm.erros.senha ? <span className="erro" id="erro-senha">{fm.erros.senha}</span> : null}
+      </div>
       <button className="btn" disabled={fm.pendente}>{fm.pendente ? 'Entrando…' : 'Entrar'}</button>
     </form>
   );
 }
 
-export function FormLink({ destino }: { destino: string }) {
+function FormLink({ destino, email, aoVoltar }: { destino: string; email: string; aoVoltar: () => void }) {
   const fm = useFormulario(acaoEntrar, (f) => ({ email: validarEmail(pega(f, 'email')) }));
   return (
-    <form ref={fm.ref} action={fm.despachar} onSubmit={fm.aoEnviar} noValidate className="pilha">
+    <form ref={fm.ref} action={fm.despachar} onSubmit={fm.aoEnviar} noValidate className="pilha form-link">
+      <p className="leve">Mandamos um link para o seu e-mail. Ele vale por 1 hora e entra direto na conta; depois, crie ou troque a senha em Conta e senha.</p>
       {fm.estado.erro ? <p className="aviso aviso-erro" role="alert">{fm.estado.erro}</p> : null}
       <AvisoLink estado={fm.estado} />
       <input type="hidden" name="destino" value={destino} />
-      <CampoEmail erro={fm.erros.email} />
-      <div><button className="btn btn-claro" disabled={fm.pendente}>{fm.pendente ? 'Enviando…' : 'Receber link no e-mail'}</button></div>
+      <CampoEmail erro={fm.erros.email} inicial={email} />
+      <button className="btn" disabled={fm.pendente}>{fm.pendente ? 'Enviando…' : 'Receber link no e-mail'}</button>
+      <button type="button" className="link-acao link-voltar" onClick={aoVoltar}>Entrar com a senha</button>
     </form>
+  );
+}
+
+// Entrar: senha ou link no e-mail, no mesmo lugar e com o mesmo e-mail digitado.
+export function PainelEntrar({ destino }: { destino: string }) {
+  const [modo, setModo] = useState<'senha' | 'link'>('senha');
+  const [email, setEmail] = useState('');
+  const caixa = useRef<HTMLDivElement>(null);
+  const primeiro = useRef(true);
+  useEffect(() => {
+    if (primeiro.current) { primeiro.current = false; return; }
+    caixa.current?.querySelector<HTMLInputElement>(modo === 'link' ? 'input[type=email]' : 'input[name=senha]')?.focus();
+  }, [modo]);
+  return (
+    <div ref={caixa} key={modo} className="campo-surge" onInput={(e) => { const t = e.target as HTMLInputElement; if (t.name === 'email') setEmail(t.value); }}>
+      {modo === 'senha' ? <FormEntrar destino={destino} email={email} aoEsquecer={() => setModo('link')} /> : <FormLink destino={destino} email={email} aoVoltar={() => setModo('senha')} />}
+    </div>
   );
 }
 
@@ -94,9 +118,10 @@ export function FormCriarConta({ tipoInicial, destino = '' }: { tipoInicial: 'ca
         {TIPOS.map((t) => (
           <label key={t.id} className="tipo-conta">
             <input className="so-leitor" type="radio" name="tipo" value={t.id} checked={tipo === t.id} onChange={() => setTipo(t.id)} />
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={t.icone} /></svg>
+            <span className="tipo-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={t.icone} /></svg></span>
+            <span className="tipo-marca" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9" /></svg></span>
             <strong>{t.nome}</strong>
-            <span>{t.texto}</span>
+            <span className="tipo-texto">{t.texto}</span>
           </label>
         ))}
       </fieldset>

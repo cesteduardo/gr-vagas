@@ -483,7 +483,6 @@ summary::-webkit-details-marker { display: none; }
 details[open] > summary::after { transform: rotate(45deg); }
 /* Fechando: o details segue aberto enquanto desliza, mas o ícone já volta (ver scripts-pagina.ts) */
 details[data-fechando] > summary::after, .faq details[data-fechando] summary::after, .ajuste[data-fechando] summary::after { transform: none; }
-.acesso-dobra[data-fechando] summary::after { margin-top: -3px; transform: rotate(45deg); }
 .so-celular { display: none; }
 @media (max-width: 960px) { .so-celular { display: flex; margin-top: 18px; } }
 
@@ -813,14 +812,27 @@ html:has(.heroi) { background: #fff linear-gradient(180deg, #2a6deb 0, #3a7bef 2
 .form-conta { display: grid; gap: 14px; }
 .tipos-conta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; border: 0; }
 .tipos-conta legend { margin-bottom: 10px; padding: 0; color: var(--ink-2); font-size: 14px; font-weight: 500; }
-@media (max-width: 520px) { .tipos-conta { grid-template-columns: minmax(0, 1fr); } }
-.tipo-conta { display: grid; align-content: start; gap: 6px; min-width: 0; padding: 22px; border-radius: var(--r-lg); background: var(--branco); box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; transition: box-shadow .25s, background .25s, transform .3s var(--ease); }
-.tipo-conta:hover { transform: translateY(-2px); }
+/* Tipo de conta: ícone e marcador em cima, nome e frase embaixo; no celular tudo numa linha só. */
+.tipo-conta { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: 'icone . marca' 'nome nome nome' 'texto texto texto'; align-items: center; gap: 4px 12px; min-width: 0; padding: 16px 18px; border-radius: var(--r-lg); background: var(--superficie); cursor: pointer; transition: box-shadow .25s, background .25s; }
+.tipo-icone { grid-area: icone; display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: 8px; border-radius: 12px; background: var(--branco); transition: background .25s; }
+.tipo-icone svg { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: stroke .25s; }
+.tipo-marca { grid-area: marca; align-self: start; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px #c3ccdb; transition: background .25s, box-shadow .25s; }
+.tipo-marca svg { width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity .2s; }
+.tipo-conta strong { grid-area: nome; font-size: 17px; letter-spacing: -.02em; transition: color .25s; }
+.tipo-texto { grid-area: texto; color: var(--ink-2); font-size: 14px; }
+.tipo-conta:hover strong { color: var(--azul-forte); }
 .tipo-conta:has(input:checked) { background: var(--azul-50); box-shadow: inset 0 0 0 2px var(--azul); }
+.tipo-conta:has(input:checked) .tipo-icone { background: var(--azul); }
+.tipo-conta:has(input:checked) .tipo-icone svg { stroke: #fff; }
+.tipo-conta:has(input:checked) .tipo-marca { background: var(--azul); box-shadow: none; }
+.tipo-conta:has(input:checked) .tipo-marca svg { opacity: 1; }
 .tipo-conta:has(input:focus-visible) { outline: 2px solid var(--ceu-forte); outline-offset: 2px; }
-.tipo-conta svg { width: 30px; height: 30px; margin-bottom: 6px; fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.tipo-conta strong { font-size: 18px; letter-spacing: -.02em; }
-.tipo-conta span { color: var(--ink-2); font-size: 14px; }
+@media (max-width: 520px) {
+  .tipos-conta { grid-template-columns: minmax(0, 1fr); }
+  .tipo-conta { grid-template-areas: 'icone nome marca' 'icone texto marca'; gap: 0 14px; padding: 14px 16px; }
+  .tipo-icone { margin: 0; align-self: center; }
+  .tipo-marca { align-self: center; }
+}
 .form-conta-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 14px; }
 .form-conta-campos > * { min-width: 0; }
 .form-conta-campos .inteiro { grid-column: 1 / -1; }
@@ -1011,9 +1023,9 @@ img.perfil-avatar:is(.perfil-foto *), .cv-foto, img.avatar { object-fit: cover; 
 @media (max-width: 860px) { .legenda-campos { grid-template-columns: minmax(0, 1fr); } .legenda-previa { grid-column: 1; grid-row: auto; position: static; } }
 
 /* Entrar e criar conta */
-.acesso { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: var(--gap); align-items: stretch; max-width: 1080px; margin: 0 auto; }
+.acesso { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: var(--gap); align-items: start; max-width: 1080px; margin: 0 auto; }
 @media (max-width: 860px) { .acesso { grid-template-columns: minmax(0, 1fr); } .acesso-lado { display: none !important; } }
-.acesso-lado { position: relative; display: flex; flex-direction: column; gap: clamp(28px, 4vw, 40px); overflow: hidden; padding: clamp(28px, 4vw, 48px); border-radius: var(--r-xl); background: linear-gradient(160deg, #4b8bf4 0%, var(--azul) 55%, var(--azul-forte) 100%); color: #fff; }
+.acesso-lado { position: sticky; top: 100px; display: flex; flex-direction: column; gap: clamp(28px, 4vw, 40px); overflow: hidden; padding: clamp(28px, 4vw, 48px); border-radius: var(--r-xl); background: linear-gradient(160deg, #4b8bf4 0%, var(--azul) 55%, var(--azul-forte) 100%); color: #fff; }
 .acesso-chamada { display: grid; gap: 24px; }
 .acesso-titulo { font-size: clamp(34px, 3.6vw, 48px); font-weight: 600; line-height: 1.04; letter-spacing: -.032em; text-wrap: balance; }
 .acesso-titulo em { color: rgb(255 255 255 / .62); }
@@ -1040,16 +1052,9 @@ img.perfil-avatar:is(.perfil-foto *), .cv-foto, img.avatar { object-fit: cover; 
 .acesso-cabeca { display: grid; gap: 8px; }
 .acesso-form h1 { font-size: clamp(34px, 3.4vw, 46px); }
 .acesso-form .painel-caixa { background: var(--superficie); }
-.acesso-form .tipo-conta { background: var(--superficie); box-shadow: none; }
 .acesso-rodape { padding-top: 18px; border-top: 1px solid var(--line); text-align: center; }
 .form-entrar .btn { margin-top: 4px; }
 /* Esqueci a senha: um texto que abre o pedido de link, sem caixa em volta */
-.acesso-dobra summary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--ink-2); font-size: 15px; font-weight: 500; cursor: pointer; transition: color var(--t-rapido) var(--ease); }
-.acesso-dobra summary:hover { color: var(--azul-forte); }
-.acesso-dobra summary::after { content: ''; width: 7px; height: 7px; margin-top: -3px; border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor; transform: rotate(45deg); transition: transform var(--t) var(--ease), margin var(--t) var(--ease); }
-.acesso-dobra[open] summary::after { margin-top: 3px; transform: rotate(-135deg); }
-.acesso-dobra > :not(summary) { margin-top: 10px; }
-.acesso-dobra .leve { font-size: 14px; }
 
 
 .portao { display: grid; justify-items: center; gap: 14px; max-width: 640px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) 24px; border-radius: var(--r-xl); background: var(--superficie); text-align: center; }
@@ -1157,3 +1162,9 @@ textarea { max-width: 100%; }
 .impulso-valor dd { margin: 2px 0 0; font-size: 18px; font-weight: 600; }
 .impulso-chave { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .impulso-chave code { overflow-wrap: anywhere; font: inherit; font-size: 16px; }
+
+/* Login: "Esqueci a senha" ao lado do rótulo; troca o formulário no lugar, com o mesmo e-mail. */
+.campo-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.link-acao { min-height: 32px; margin: -6px 0; padding: 6px 0; border: 0; background: none; color: var(--azul); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: color var(--t-rapido) var(--ease); }
+.link-acao:hover { color: var(--azul-forte); text-decoration: underline; text-underline-offset: 3px; }
+.link-voltar { justify-self: center; }

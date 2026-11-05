@@ -16,7 +16,7 @@ export default async function CandidatoLayout({ children }: { children: ReactNod
         <div className="app">
           <aside className="app-menu">
             <p className="app-ola">Olá, {u.nome.split(' ')[0]}</p>
-            <Abas rotulo="Sua conta" itens={[{ href: '/candidato', nome: 'Início', raiz: true }, { href: '/candidato/conversas', nome: 'Conversas' }, { href: '/candidato/perfil', nome: 'Perfil e arquivo' }, { href: '/candidato/curriculo', nome: 'Currículo pronto' }, { href: '/candidato/salvas', nome: 'Vagas salvas' }, { href: '/candidato/alertas', nome: 'Alertas' }, { href: '/candidato/plano', nome: 'Plano' }, { href: '/candidato/conta', nome: 'Conta e senha' }]} />
+            <Abas rotulo="Sua conta" itens={[{ href: '/candidato', nome: 'Início', raiz: true }, { href: '/candidato/conversas', nome: 'Conversas' }, { href: '/candidato/perfil', nome: 'Perfil e currículo' }, { href: '/candidato/curriculo', nome: 'Currículo pronto' }, { href: '/candidato/salvas', nome: 'Vagas salvas' }, { href: '/candidato/alertas', nome: 'Alertas' }, { href: '/candidato/plano', nome: 'Plano' }, { href: '/candidato/conta', nome: 'Conta e senha' }]} />
           </aside>
           <div className="app-conteudo">
             {u.confirmado ? null : (

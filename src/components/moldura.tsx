@@ -3,7 +3,9 @@ import { acaoSair } from '@/app/acoes';
 import { usuarioAtual, ehAdmin } from '@/lib/auth/sessao';
 import { naoLidas } from '@/lib/candidaturas';
 import { SIMULADOR } from '@/lib/config';
+import { eq, sql } from 'drizzle-orm';
 import { banco } from '@/lib/db/client';
+import { empresas, perfis } from '@/lib/db/schema';
 import { Ilha, type ItemNav } from './ilha';
 import { LinkLegal } from './legal';
 import { Palavra, Simbolo } from './marca';
@@ -24,27 +26,47 @@ const CREDITO_SVG = (
 
 export async function Topo() {
   const u = await usuarioAtual();
-  const publico: ItemNav[] = [{ href: '/vagas', rotulo: 'Vagas' }, { href: '/calculos', rotulo: 'Cálculos' }];
-  let itens: ItemNav[];
-  let acao: ItemNav;
-  let extra;
   if (!u) {
-    itens = [...publico, { href: '/anunciantes', rotulo: 'Para empresas' }];
-    acao = { href: '/criar-conta', rotulo: 'Criar conta' };
-    extra = <Link className="btn btn-claro" href="/entrar">Entrar</Link>;
-  } else {
-    const db = await banco();
-    const empresa = u.tipo === 'contratante';
-    // As não lidas ficam em Conversas, que leva direto à caixa de entrada.
-    itens = [{ href: empresa ? '/painel' : '/candidato', rotulo: empresa ? 'Meu painel' : 'Minha conta' }, { href: empresa ? '/painel/conversas' : '/candidato/conversas', rotulo: 'Conversas', contagem: await naoLidas(db, u.id, empresa ? 'empresa' : 'candidato') }, ...publico];
-    if (ehAdmin(u.email)) itens = [{ href: '/admin', rotulo: 'Administração' }, ...itens];
-    acao = empresa ? { href: '/publicar', rotulo: 'Publicar vaga' } : { href: '/vagas', rotulo: 'Ver vagas' };
-    extra = <form action={acaoSair}><button type="submit" className="btn btn-claro" style={{ width: '100%' }}>Sair</button></form>;
+    return (
+      <>
+        {SIMULADOR ? <p className="faixa-demo">Demonstração</p> : null}
+        <Ilha
+          itens={[{ href: '/vagas', rotulo: 'Vagas' }, { href: '/calculos', rotulo: 'Cálculos' }, { href: '/anunciantes', rotulo: 'Para empresas' }]}
+          acao={{ href: '/criar-conta', rotulo: 'Criar conta' }}
+          extra={<Link className="btn btn-claro" href="/entrar">Entrar</Link>}
+        />
+      </>
+    );
   }
+  // Logado, o topo leva ao que se usa todo dia; o resto da conta fica no menu da bolinha.
+  const db = await banco();
+  const empresa = u.tipo === 'contratante';
+  const novas = await naoLidas(db, u.id, empresa ? 'empresa' : 'candidato');
+  let imagem: string | null = null;
+  let slug = '';
+  if (empresa && u.empresaId) {
+    const [e] = await db.select({ temLogo: sql<boolean>`${empresas.logo} is not null`, slug: empresas.slug }).from(empresas).where(eq(empresas.id, u.empresaId));
+    if (e?.temLogo) imagem = `/api/logo/${u.empresaId}`;
+    slug = e?.slug ?? '';
+  } else {
+    const [p] = await db.select({ temFoto: sql<boolean>`${perfis.foto} is not null` }).from(perfis).where(eq(perfis.usuarioId, u.id));
+    if (p?.temFoto) imagem = `/api/foto/${u.id}`;
+  }
+  const itens: ItemNav[] = empresa
+    ? [{ href: '/painel', rotulo: 'Minhas vagas' }, { href: '/painel/conversas', rotulo: 'Conversas', contagem: novas }, { href: '/painel/talentos', rotulo: 'Banco de talentos' }]
+    : [{ href: '/vagas', rotulo: 'Vagas' }, { href: '/candidato/conversas', rotulo: 'Conversas', contagem: novas }, { href: '/candidato/salvas', rotulo: 'Salvas' }];
+  if (ehAdmin(u.email)) itens.unshift({ href: '/admin', rotulo: 'Administração' });
+  const links: ItemNav[] = empresa
+    ? [{ href: '/painel', rotulo: 'Painel' }, { href: '/painel/empresa', rotulo: 'Perfil da empresa' }, ...(slug ? [{ href: `/empresas/${slug}`, rotulo: 'Ver página pública' }] : []), { href: '/painel/plano', rotulo: 'Plano' }, { href: '/painel/conta', rotulo: 'Conta e senha' }]
+    : [{ href: '/candidato', rotulo: 'Minha conta' }, { href: '/candidato/perfil', rotulo: 'Perfil e currículo' }, { href: '/candidato/alertas', rotulo: 'Alertas' }, { href: '/candidato/plano', rotulo: 'Plano' }, { href: '/candidato/conta', rotulo: 'Conta e senha' }];
   return (
     <>
       {SIMULADOR ? <p className="faixa-demo">Demonstração</p> : null}
-      <Ilha itens={itens} acao={acao} extra={extra} />
+      <Ilha
+        itens={itens}
+        acao={empresa ? { href: '/publicar', rotulo: 'Publicar vaga' } : undefined}
+        conta={{ nome: u.nome, imagem, links, sair: <form action={acaoSair}><button type="submit" className="btn btn-claro" style={{ width: '100%' }}>Sair</button></form> }}
+      />
     </>
   );
 }

@@ -88,7 +88,9 @@ export function Selecao({ name, id, value, defaultValue, onChange, children, 'ar
         {children}
       </select>
       {aberto ? (
-        <ul className="selecao-lista" id={`${baseId}-l`} role="listbox" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+        // A rolagem fica na camada de dentro, recuada da borda: assim a barra nunca passa do canto arredondado (o Firefox não a recorta).
+        <div className="selecao-lista">
+        <ul className="selecao-rolagem" id={`${baseId}-l`} role="listbox" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
           {opcoes.map((o, i) => (
             <li key={o.valor} id={`${baseId}-${i}`} data-i={i} role="option" aria-selected={o.valor === atual} className={i === ativo ? 'ativa' : undefined} onPointerEnter={() => setAtivo(i)} onClick={() => escolher(o.valor)}>
               <span>{o.rotulo}</span>
@@ -96,6 +98,7 @@ export function Selecao({ name, id, value, defaultValue, onChange, children, 'ar
             </li>
           ))}
         </ul>
+        </div>
       ) : null}
     </span>
   );

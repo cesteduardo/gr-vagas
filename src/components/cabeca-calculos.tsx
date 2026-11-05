@@ -17,7 +17,7 @@ export function CabecaCalculos() {
     <section className="heroi embrulho heroi-curto">
       <div key={p.href} className="heroi-texto">
         {/* Sempre em duas linhas, uma sobre a outra, qualquer que seja o tamanho do título */}
-        <h1>{p.titulo}<br /><em>{p.cinza}</em></h1>
+        <h1>{p.titulo} <em>{p.cinza}</em></h1>
         <p className="heroi-sub">{p.texto}</p>
       </div>
       <div style={{ marginTop: 24 }}>

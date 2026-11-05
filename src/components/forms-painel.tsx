@@ -1,7 +1,10 @@
 'use client';
 
 import { Selecao } from '@/components/selecao';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import type { Acrescimos } from '@/lib/perfil-do-curriculo';
+import { resumoDoEnvio } from '@/lib/resumo-envio';
 import { acaoCriarAlerta, acaoEditarVaga, acaoEmpresa, acaoExcluirConta, acaoPerfil } from '@/app/acoes';
 import { AREAS, CIDADES, CONTRATOS, MODALIDADES } from '@/lib/config';
 import { errosVaga } from '@/lib/forms/vaga';
@@ -69,6 +72,8 @@ export function EnviarCurriculo({ nomeAtual, candidatoId }: { nomeAtual: string 
   const [nome, setNome] = useState(nomeAtual);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const router = useRouter();
   return (
     <div className="painel-caixa pilha">
       <h2 style={{ fontSize: '1.6rem' }}>Currículo</h2>
@@ -89,9 +94,13 @@ export function EnviarCurriculo({ nomeAtual, candidatoId }: { nomeAtual: string 
             d.set('arquivo', arquivo);
             try {
               const r = await fetch('/api/curriculo', { method: 'POST', body: d });
-              const j = (await r.json()) as { nome?: string; erro?: string };
-              if (r.ok && j.nome) setNome(j.nome);
-              else setErro(j.erro ?? 'Não foi possível enviar o arquivo.');
+              const j = (await r.json()) as { nome?: string; erro?: string; acrescimos?: Acrescimos; combinam?: number };
+              if (r.ok && j.nome) {
+                setNome(j.nome);
+                setAviso(resumoDoEnvio(j.acrescimos, j.combinam));
+                // As vagas sugeridas da página vêm do perfil, que acabou de mudar.
+                router.refresh();
+              } else setErro(j.erro ?? 'Não foi possível enviar o arquivo.');
             } catch {
               setErro('Não foi possível enviar o arquivo. Verifique a conexão e tente de novo.');
             }
@@ -100,6 +109,7 @@ export function EnviarCurriculo({ nomeAtual, candidatoId }: { nomeAtual: string 
           }}
         />
       </div>
+      {aviso ? <p className="aviso aviso-ok" role="status">{aviso}</p> : null}
       {erro ? <p className="aviso aviso-erro" role="alert">{erro}</p> : null}
     </div>
   );

@@ -4,6 +4,9 @@ import { useState, type ReactNode } from 'react';
 import { acaoSalvarCurriculo } from '@/app/acoes';
 import { CIDADES } from '@/lib/config';
 import { ESTADOS_CIVIS, NIVEIS, type Cv, type Experiencia, type Formacao } from '@/lib/curriculo';
+import type { Acrescimos } from '@/lib/perfil-do-curriculo';
+import { resumoDoEnvio } from '@/lib/resumo-envio';
+import Link from 'next/link';
 import { CampoArquivo } from './campo-arquivo';
 import { Selecao } from './selecao';
 
@@ -36,7 +39,7 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
   const [nascimento, setNascimento] = useState(isoParaBr(inicial.cv.nascimento));
   const [habilidade, setHabilidade] = useState('');
   const [arquivo, setArquivo] = useState(inicial.curriculoNome);
-  const [lido, setLido] = useState<Cv | null>(null);
+  const [enviado, setEnviado] = useState<{ texto: string; combinam: number } | null>(null);
   const [estado, setEstado] = useState<{ ok?: string; erro?: string; erros?: Record<string, string> }>({});
   const [salvando, setSalvando] = useState(false);
 
@@ -54,11 +57,22 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
     if (r.erros) requestAnimationFrame(() => document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
   };
 
-  const usarLido = () => {
-    if (!lido) return;
-    setCv((a) => ({ ...a, ...Object.fromEntries(Object.entries(lido).filter(([, v]) => (Array.isArray(v) ? v.length : v))) }));
-    if (lido.nascimento) setNascimento(isoParaBr(lido.nascimento));
-    setLido(null);
+  // O servidor já gravou no perfil o que o arquivo trouxe; aqui soma o mesmo à tela,
+  // sem tocar no que a pessoa já escreveu e ainda não salvou.
+  const somar = (a: Acrescimos) => {
+    if (a.titulo) setTitulo((t) => (t.trim() ? t : a.titulo!));
+    if (a.cidadeSlug) setCidade((c) => c || a.cidadeSlug!);
+    if (a.resumo) setResumo((r) => (r.trim() ? r : a.resumo!));
+    setCv((atual) => {
+      const n: Cv = { ...atual };
+      if (a.cv.experiencias?.length) n.experiencias = [...(atual.experiencias ?? []), ...a.cv.experiencias];
+      if (a.cv.formacao?.length) n.formacao = [...(atual.formacao ?? []), ...a.cv.formacao];
+      if (a.cv.idiomas?.length) n.idiomas = [...(atual.idiomas ?? []), ...a.cv.idiomas];
+      if (a.cv.habilidades?.length) n.habilidades = [...new Set([...(atual.habilidades ?? []), ...a.cv.habilidades])].slice(0, 20);
+      for (const k of ['objetivo', 'estadoCivil', 'endereco', 'portfolio'] as const) if (a.cv[k] && !atual[k]) n[k] = a.cv[k];
+      return n;
+    });
+    if (a.cv.nascimento) setNascimento((x) => x || isoParaBr(a.cv.nascimento));
   };
 
   const erro = (k: string) => estado.erros?.[k];
@@ -67,7 +81,7 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
       <div className="painel-caixa cv-importar">
         <div>
           <h2 style={{ fontSize: 20 }}>Seu currículo em PDF</h2>
-          <p className="nota">{arquivo ? `Arquivo atual: ${arquivo}. ` : ''}A empresa recebe junto com a candidatura. Ao enviar, a gente lê e pode preencher o perfil abaixo.</p>
+          <p className="nota">{arquivo ? `Arquivo atual: ${arquivo}. ` : ''}A empresa recebe junto com a candidatura. Ao enviar, o perfil abaixo se completa com o que estiver no arquivo, sem apagar o que você já escreveu.</p>
           {arquivo ? <p style={{ marginTop: 6 }}><a href={`/api/curriculo/${inicial.candidatoId}`}>{arquivo}</a></p> : null}
         </div>
         <CampoArquivo id="arquivo-curriculo" accept="application/pdf" rotulo="Enviar PDF" onChange={async (e) => {
@@ -77,22 +91,22 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
           d.set('arquivo', f);
           try {
             const r = await fetch('/api/curriculo', { method: 'POST', body: d });
-            const j = (await r.json()) as { nome?: string; erro?: string; cv?: Cv };
+            const j = (await r.json()) as { nome?: string; erro?: string; acrescimos?: Acrescimos; combinam?: number };
             if (!r.ok || !j.nome) setEstado({ erro: j.erro ?? 'Não foi possível enviar o arquivo.' });
             else {
               setArquivo(j.nome);
-              const temAlgo = j.cv && (j.cv.formacao?.length || j.cv.experiencias?.length || j.cv.idiomas?.length);
-              setLido(temAlgo ? j.cv! : null);
+              if (j.acrescimos) somar(j.acrescimos);
+              setEnviado({ texto: resumoDoEnvio(j.acrescimos, j.combinam), combinam: j.combinam ?? 0 });
             }
           } catch {
             setEstado({ erro: 'Não foi possível enviar o arquivo. Verifique a conexão e tente de novo.' });
           }
           e.target.value = '';
         }} />
-        {lido ? (
-          <p className="aviso aviso-ok">
-            Encontramos {lido.experiencias?.length ?? 0} experiências, {lido.formacao?.length ?? 0} formações e {lido.idiomas?.length ?? 0} idiomas no arquivo.
-            <button type="button" className="btn btn-peq" style={{ marginLeft: 10 }} onClick={usarLido}>Preencher meu perfil</button>
+        {enviado ? (
+          <p className="aviso aviso-ok" role="status">
+            {enviado.texto}
+            {enviado.combinam ? <> <Link href="/candidato">Ver as vagas</Link></> : null}
           </p>
         ) : null}
       </div>

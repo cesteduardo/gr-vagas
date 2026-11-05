@@ -16,9 +16,9 @@ import { validarEmail, validarSenha } from '@/lib/forms/validators';
 import { errosEmpresa, errosPessoa, pessoaNormalizada, validarVaga, type CamposVaga } from '@/lib/forms/vaga';
 import { revisarTexto } from '@/lib/moderacao';
 import { validarPerfilEmpresa } from '@/lib/empresa';
-import { cvDoTexto, cvValido } from '@/lib/curriculo';
-import { textoDoPdf } from '@/lib/ia/curriculo';
-import { alternarSalva, apagarAlerta, criarAlerta, excluirConta, guardarCurriculo, salvarPerfil, validarPdf } from '@/lib/perfis';
+import { cvValido } from '@/lib/curriculo';
+import { aplicarCurriculo } from '@/lib/perfil-do-curriculo';
+import { alternarSalva, apagarAlerta, criarAlerta, excluirConta, guardarCurriculo, salvarPerfil } from '@/lib/perfis';
 import { assinar, cancelar } from '@/lib/planos';
 import { alternarDestaque, denunciar, editarVaga, mudarEstadoVaga, publicarVaga, resolverDenuncia, salvarArte, vagaAceitaCandidatura } from '@/lib/vagas';
 import { eq } from 'drizzle-orm';
@@ -167,17 +167,14 @@ export async function acaoCandidatar(_: EstadoForm, f: FormData): Promise<Estado
   if (!conta.ok || !conta.usuarioId) return { erro: 'Este e-mail já tem conta. Entre com ela para se candidatar.', aviso: undefined };
   const u = conta.usuarioId;
   await gravarCookieSessao(await abrirSessao(db, u));
+  const titulo = texto(f, 'titulo').trim();
+  if (titulo) await salvarPerfil(db, u, { titulo: titulo.slice(0, 80), cidadeSlug: texto(f, 'cidadeSlug'), resumo: texto(f, 'resumo').trim().slice(0, 2000), aceiteTalentos: false });
+  // O currículo da candidatura já monta o perfil: habilidades, experiências e formação entram sozinhas.
   const arquivo = f.get('curriculo');
-  let cvLido;
   if (arquivo instanceof File && arquivo.size > 0) {
     const b = Buffer.from(await arquivo.arrayBuffer());
-    if (!validarPdf(b)) {
-      await guardarCurriculo(db, u, arquivo.name, b);
-      cvLido = cvDoTexto(await textoDoPdf(b));
-    }
+    if (!(await guardarCurriculo(db, u, arquivo.name, b))) await aplicarCurriculo(db, u, b);
   }
-  const titulo = texto(f, 'titulo').trim();
-  if (titulo) await salvarPerfil(db, u, { titulo: titulo.slice(0, 80), cidadeSlug: texto(f, 'cidadeSlug'), resumo: texto(f, 'resumo').trim().slice(0, 2000), aceiteTalentos: false, cv: cvLido });
   const r = await candidatarLogado(db, { id: u, tipo: 'candidato' }, vagaId);
   if (!r.ok) return { erro: r.erro };
   await avisarNovaCandidatura(db, r.candidaturaId);

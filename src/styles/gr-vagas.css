@@ -62,7 +62,8 @@ h1, h2, h3 { margin: 0; font-weight: 600; text-wrap: balance; font-optical-sizin
 h1 { font-size: clamp(36px, 5.2vw, 64px); line-height: 1.04; letter-spacing: -.032em; }
 h2 { font-size: clamp(30px, 3.6vw, 48px); line-height: 1.08; letter-spacing: -.028em; }
 h3 { font-size: clamp(18px, 1.6vw, 21px); font-weight: 600; line-height: 1.22; letter-spacing: -.025em; }
-h1 em, h2 em { font-style: normal; color: var(--titulo-2); }
+/* Título em duas frases: a segunda, em cinza, sempre na linha de baixo, no site todo. */
+h1 em, h2 em, .acesso-titulo em { display: block; font-style: normal; color: var(--titulo-2); }
 .so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .embrulho { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--pad); }
 .estreito { width: 100%; max-width: 860px; margin-inline: auto; padding-inline: var(--pad); }
@@ -642,7 +643,9 @@ main.pagina .compor textarea { height: 50px; min-height: 50px; border-radius: 25
 .selecao-botao::after { content: ''; flex: none; width: 8px; height: 8px; margin: -3px 2px 0 0; border-right: 2px solid var(--ink-2); border-bottom: 2px solid var(--ink-2); border-radius: 1px; transform: rotate(45deg); transition: transform .25s var(--ease), margin .25s var(--ease); }
 .selecao.aberta .selecao-botao::after { margin-top: 4px; transform: rotate(-135deg); }
 .selecao select { left: 0; bottom: 0; }
-.selecao-lista { position: absolute; z-index: 45; top: calc(100% + 8px); left: 0; right: 0; min-width: 200px; max-height: 300px; margin: 0; padding: 6px; overflow-y: auto; border: 1px solid var(--line); border-radius: 24px; background: var(--branco); box-shadow: 0 2px 6px rgb(20 22 27 / .06), 0 28px 56px -24px rgb(20 22 27 / .35); list-style: none; animation: abrir-lista .2s var(--ease); transform-origin: top center; }
+.selecao-lista { position: absolute; z-index: 45; top: calc(100% + 8px); left: 0; right: 0; min-width: 200px; padding: 6px; overflow: hidden; border: 1px solid var(--line); border-radius: 24px; background: var(--branco); box-shadow: 0 2px 6px rgb(20 22 27 / .06), 0 28px 56px -24px rgb(20 22 27 / .35); animation: abrir-lista .2s var(--ease); transform-origin: top center; }
+/* A caixa de fora tem a borda e a sombra; a de dentro rola, recuada 6px e com o canto acompanhando o de fora. */
+.selecao-rolagem { max-height: 286px; margin: 0; padding: 0; overflow-y: auto; border-radius: 18px; list-style: none; overscroll-behavior: contain; }
 @keyframes abrir-lista { from { opacity: 0; transform: translateY(-6px) scale(.98); } }
 .selecao-lista li { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 10px 14px; border-radius: 18px; font-size: 15px; cursor: pointer; transition: background .15s; }
 .selecao-lista li svg { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--azul); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
@@ -687,15 +690,15 @@ html:has(.heroi) { background: #fff linear-gradient(180deg, #2a6deb 0, #3a7bef 2
 ::-webkit-scrollbar-thumb:active { background-color: var(--azul); }
 /* Listas, áreas de texto, conversa, menu e pop-ups: a alça só aparece com o mouse em cima.
    Dentro de caixas arredondadas ela fica recuada da borda e a margem do trilho passa da curva do canto. */
-:is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo)::-webkit-scrollbar { width: 12px; }
-:is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo)::-webkit-scrollbar-track { margin: 16px 0; }
-:is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo)::-webkit-scrollbar-thumb { border-width: 3px 4px 3px 3px; background-color: transparent; }
-:is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo):is(:hover, :focus-within)::-webkit-scrollbar-thumb { background-color: var(--alca); }
-:is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo)::-webkit-scrollbar-thumb:hover { background-color: var(--alca-hover); }
+:is(.selecao-rolagem, textarea, .mensagens, .gaveta, .modal-corpo)::-webkit-scrollbar { width: 12px; }
+:is(.selecao-rolagem, textarea, .mensagens, .gaveta, .modal-corpo)::-webkit-scrollbar-track { margin: 16px 0; }
+:is(.selecao-rolagem, textarea, .mensagens, .gaveta, .modal-corpo)::-webkit-scrollbar-thumb { border-width: 3px 4px 3px 3px; background-color: transparent; }
+:is(.selecao-rolagem, textarea, .mensagens, .gaveta, .modal-corpo):is(:hover, :focus-within)::-webkit-scrollbar-thumb { background-color: var(--alca); }
+:is(.selecao-rolagem, textarea, .mensagens, .gaveta, .modal-corpo)::-webkit-scrollbar-thumb:hover { background-color: var(--alca-hover); }
 @supports (-moz-appearance: none) {
   html { scrollbar-width: thin; scrollbar-color: var(--alca) transparent; }
-  :is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo) { scrollbar-width: thin; scrollbar-color: transparent transparent; transition: scrollbar-color .2s; }
-  :is(.selecao-lista, textarea, .mensagens, .gaveta, .modal-corpo):is(:hover, :focus-within) { scrollbar-color: var(--alca) transparent; }
+  :is(.selecao-rolagem, textarea, .mensagens, .gaveta, .modal-corpo) { scrollbar-width: thin; scrollbar-color: transparent transparent; transition: scrollbar-color .2s; }
+  :is(.selecao-rolagem, textarea, .mensagens, .gaveta, .modal-corpo):is(:hover, :focus-within) { scrollbar-color: var(--alca) transparent; }
 }
 .rapidas, .faixa-artes, .carrossel, .letreiro, .linha-do-dia { scrollbar-width: none; }
 .rapidas::-webkit-scrollbar, .faixa-artes::-webkit-scrollbar, .carrossel::-webkit-scrollbar, .letreiro::-webkit-scrollbar, .linha-do-dia::-webkit-scrollbar { display: none; }
@@ -942,7 +945,7 @@ img.perfil-avatar:is(.perfil-foto *), .cv-foto, img.avatar { object-fit: cover; 
 .acesso-lado { position: relative; display: flex; flex-direction: column; gap: clamp(28px, 4vw, 40px); overflow: hidden; padding: clamp(28px, 4vw, 48px); border-radius: var(--r-xl); background: linear-gradient(160deg, #4b8bf4 0%, var(--azul) 55%, var(--azul-forte) 100%); color: #fff; }
 .acesso-chamada { display: grid; gap: 24px; }
 .acesso-titulo { font-size: clamp(34px, 3.6vw, 48px); font-weight: 600; line-height: 1.04; letter-spacing: -.032em; text-wrap: balance; }
-.acesso-titulo em { font-style: normal; color: rgb(255 255 255 / .62); }
+.acesso-titulo em { color: rgb(255 255 255 / .62); }
 .acesso-chamada ul { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
 .acesso-chamada li { position: relative; padding-left: 30px; font-weight: 500; }
 .acesso-chamada li::before { content: ''; position: absolute; left: 4px; top: .4em; width: 12px; height: 7px; border-left: 2.2px solid #fff; border-bottom: 2.2px solid #fff; transform: rotate(-45deg); }

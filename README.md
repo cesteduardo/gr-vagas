@@ -45,7 +45,7 @@ Mapa das telas em `docs/plano.md`, seção 4b. Regras em `src/lib`; cálculos em
 
 Toda decisão pendente (nome, preços, cidades) fica em `src/lib/config.ts`. Lista completa em `docs/plano.md`, seção 10.
 
-- **Pagamento:** implementar `ProvedorPagamento` (`src/lib/pagamentos/provedor.ts`) e ligar em `provedorAtivo()`. Fora do modo de demonstração, as telas dizem que a assinatura está para chegar.
+- **Pagamento:** Asaas (`src/lib/pagamentos/asaas.ts`, `src/lib/cobrancas.ts`). Com `ASAAS_API_KEY`, cada mês de plano e cada impulso abre o Checkout do Asaas com Pix e cartão; o webhook `POST /api/pagamentos/asaas` (token em `ASAAS_WEBHOOK_TOKEN`, cabeçalho `asaas-access-token`) libera 30 dias ou marca o impulso como pago. Três dias antes do fim sai um e-mail para renovar. O Checkout recorrente do Asaas é só no cartão, por isso o mês é avulso. Testado contra a documentação, ainda não contra a conta real.
 - **IA:** defina `ANTHROPIC_API_KEY`. Modelo padrão `claude-opus-5-5`, trocável em `MODELO_IA_VAGAS`. O caminho com a API real não foi testado com chave; sem chave, regras locais.
 - **E-mail:** preencher `SMTP_*`. O envio por SMTP não foi testado com conta real.
 - **Alertas:** rodam de hora em hora dentro do servidor (`src/instrumentation.ts`), sozinhos na demonstração. Em produção, escolha um: `ALERTAS_AUTOMATICOS=1` num servidor sempre ligado, ou um cron externo chamando `POST /api/cron/alertas` com `Authorization: Bearer $CRON_SEGREDO` (ex.: `0 * * * * curl -fsS -X POST -H "Authorization: Bearer $CRON_SEGREDO" https://SEU_DOMINIO/api/cron/alertas`). Os dois juntos mandam e-mail em dobro.

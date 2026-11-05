@@ -6,6 +6,8 @@ import { revisarTexto } from '@/lib/moderacao';
 import type { Banco } from '@/lib/db/client';
 import { assinaturas, eventosPagamento, usuarios, type ConfigArte } from '@/lib/db/schema';
 import type { EventoPagamento, ProvedorPagamento } from './pagamentos/provedor';
+import { abrirCobrancaPlano } from '@/lib/cobrancas';
+import { asaasLigado } from '@/lib/pagamentos/asaas';
 import { provedorSimulado } from './pagamentos/simulado';
 
 export const limites = (plano: PlanoId): Limites => LIMITES[plano];
@@ -63,6 +65,15 @@ export async function assinar(db: Banco, usuarioId: string, plano: string, prove
   if (!u) return { ok: false, erro: 'Conta não encontrada.' };
   const valido = planosDoTipo(u.tipo).some((p) => p.id === plano && p.preco > 0);
   if (!valido) return { ok: false, erro: 'Este plano não existe para a sua conta.' };
+  // Com a chave do Asaas, cada mês é uma página de pagamento com Pix ou cartão.
+  if (asaasLigado()) {
+    try {
+      return { ok: true, url: await abrirCobrancaPlano(db, usuarioId, plano) };
+    } catch (e) {
+      console.error('[asaas] cobrança do plano', e instanceof Error ? e.message : e);
+      return { ok: false, erro: 'Não foi possível abrir o pagamento agora. Tente de novo em instantes.' };
+    }
+  }
   if (!provedor) return { ok: false, erro: 'A assinatura ainda não está disponível.' };
   const r = await provedor.iniciar({ usuarioId, plano });
   if ('urlPagamento' in r) return { ok: true, url: r.urlPagamento };

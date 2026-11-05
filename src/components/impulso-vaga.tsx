@@ -1,14 +1,16 @@
-import { acaoCancelarImpulso, acaoPedirImpulso } from '@/app/acoes';
+import { acaoCancelarImpulso, acaoPagarImpulso, acaoPedirImpulso } from '@/app/acoes';
+import { asaasLigado } from '@/lib/pagamentos/asaas';
 import { IMPULSOS, SIMULADOR } from '@/lib/config';
 import { formatarData } from '@/lib/texto';
 import { BotaoCopiar } from './botao-copiar';
 import { precoCurto } from './cartao-plano';
 
-type Situacao = { noArAte: Date | null; pedido: { id: string; dias: number; valorCentavos: number; criadoEm: Date } | null };
+type Situacao = { noArAte: Date | null; pedido: { id: string; dias: number; valorCentavos: number; criadoEm: Date; pagoEm: Date | null } | null };
 
 // Aba Impulsionar da vaga: escolher o prazo, pagar por Pix e esperar o administrador pôr no ar.
-export function ImpulsoVaga({ vagaId, aberta, situacao, pedidoNovo, erro }: { vagaId: string; aberta: boolean; situacao: Situacao; pedidoNovo?: boolean; erro?: string }) {
-  const chave = process.env.PIX_CHAVE?.trim();
+export function ImpulsoVaga({ vagaId, aberta, situacao, pedidoNovo, voltouPago, erro }: { vagaId: string; aberta: boolean; situacao: Situacao; pedidoNovo?: boolean; voltouPago?: boolean; erro?: string }) {
+  const asaas = asaasLigado();
+  const chave = asaas ? undefined : process.env.PIX_CHAVE?.trim();
   const { noArAte, pedido } = situacao;
   return (
     <div className="impulso">
@@ -19,15 +21,26 @@ export function ImpulsoVaga({ vagaId, aberta, situacao, pedidoNovo, erro }: { va
       </section>
       {erro ? <p className="aviso aviso-erro" role="alert">{erro}</p> : null}
 
-      {pedido ? (
+      {pedido?.pagoEm ? (
         <section className="painel-caixa impulso-pix" aria-labelledby="t-pix">
-          <h3 id="t-pix">{pedidoNovo ? 'Pedido enviado. Falta o pagamento.' : 'Esperando o pagamento'}</h3>
+          <h3 id="t-pix">Pagamento recebido</h3>
+          <p className="leve">{pedido.dias} dias de impulso, pagos em {formatarData(pedido.pagoEm)}. A vaga entra na tela inicial assim que for posta no ar, e o prazo aparece aqui.</p>
+        </section>
+      ) : pedido ? (
+        <section className="painel-caixa impulso-pix" aria-labelledby="t-pix">
+          <h3 id="t-pix">{voltouPago ? 'Pagamento enviado. Esperando a confirmação.' : pedidoNovo ? 'Pedido enviado. Falta o pagamento.' : 'Esperando o pagamento'}</h3>
           <p className="leve">{pedido.dias} dias de impulso, pedidos em {formatarData(pedido.criadoEm)}. Assim que o pagamento cair, a vaga entra no ar e o prazo aparece aqui.</p>
           <dl className="impulso-valor">
             <div><dt>Valor</dt><dd>{precoCurto(pedido.valorCentavos / 100)}</dd></div>
             {chave ? <div><dt>Chave Pix</dt><dd className="impulso-chave"><code>{chave}</code><BotaoCopiar texto={chave} rotulo="Copiar chave" copiado="Chave copiada" /></dd></div> : null}
           </dl>
-          {chave ? null : <p className="nota">Vamos falar com você pelo WhatsApp do cadastro para combinar o pagamento por Pix.</p>}
+          {asaas ? (
+            <form action={acaoPagarImpulso}>
+              <input type="hidden" name="vagaId" value={vagaId} />
+              <input type="hidden" name="pedidoId" value={pedido.id} />
+              <button className="btn">Pagar com Pix ou cartão</button>
+            </form>
+          ) : chave ? null : <p className="nota">Vamos falar com você pelo WhatsApp do cadastro para combinar o pagamento por Pix.</p>}
           {SIMULADOR ? <p className="nota">Demonstração: entre com a conta de administração para pôr no ar.</p> : null}
           <form action={acaoCancelarImpulso}>
             <input type="hidden" name="vagaId" value={vagaId} />

@@ -58,7 +58,7 @@ export default async function VagaPainel({ params, searchParams }: { params: Pro
       );
     }
     if (aba === 'editar') return <FormEditarVaga v={v} />;
-    if (aba === 'impulsionar') return <ImpulsoVaga vagaId={v.id} aberta={vagaAceitaCandidatura(v)} situacao={await situacaoDoImpulso(db, v.id)} pedidoNovo={s.pedido === '1'} />;
+    if (aba === 'impulsionar') return <ImpulsoVaga vagaId={v.id} aberta={vagaAceitaCandidatura(v)} situacao={await situacaoDoImpulso(db, v.id)} pedidoNovo={s.pedido === '1'} voltouPago={s.pago === '1'} />;
     const lista = await candidaturasDaVaga(db, u.empresaId, v.id, u.id);
     if (!lista.length) {
       return (

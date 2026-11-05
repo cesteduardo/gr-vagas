@@ -36,6 +36,7 @@ export default async function AdminImpulsos() {
               <div>
                 <h3 style={{ fontSize: '1.15rem' }}><Link href={`/vagas/${p.vagaSlug}`} style={{ color: 'inherit' }}>{p.vagaTitulo}</Link></h3>
                 <small>{p.empresa} · {p.dias} dias · {precoCurto(p.valorCentavos / 100)} · pedido em {formatarHora(p.criadoEm)}</small>
+                <div style={{ marginTop: 6 }}>{p.pagoEm ? <span className="etiqueta etiqueta-verde" style={{ margin: 0 }}>Pago pelo Asaas em {formatarHora(p.pagoEm)}</span> : <span className="etiqueta etiqueta-neutra" style={{ margin: 0 }}>Esperando o Pix</span>}</div>
               </div>
               <div className="linha-botoes">
                 <Botao id={p.id} fazer="no-ar" rotulo="Recebi, pôr no ar" />

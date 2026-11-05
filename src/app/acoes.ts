@@ -18,6 +18,7 @@ import { revisarTexto } from '@/lib/moderacao';
 import { validarPerfilEmpresa } from '@/lib/empresa';
 import { cvValido } from '@/lib/curriculo';
 import { aplicarCurriculo } from '@/lib/perfil-do-curriculo';
+import { abrirCobrancaImpulso } from '@/lib/cobrancas';
 import { cancelarPedidoImpulso, pedirImpulso, porImpulsoNoAr, recusarImpulso, tirarImpulso } from '@/lib/impulsos';
 import { alternarSalva, apagarAlerta, criarAlerta, excluirConta, guardarCurriculo, salvarPerfil } from '@/lib/perfis';
 import { assinar, cancelar } from '@/lib/planos';
@@ -364,6 +365,21 @@ export async function acaoPedirImpulso(f: FormData) {
   if (!uuidValido(vagaId)) redirect('/painel');
   const r = await pedirImpulso(await banco(), u.empresaId, vagaId, Number(texto(f, 'dias')));
   redirect(`/painel/vagas/${vagaId}?aba=impulsionar${r.ok ? '&pedido=1' : `&erro=${encodeURIComponent(r.erro)}`}`);
+}
+
+export async function acaoPagarImpulso(f: FormData) {
+  const u = await exigirContratante();
+  const vagaId = texto(f, 'vagaId');
+  const pedidoId = texto(f, 'pedidoId');
+  if (!uuidValido(vagaId) || !uuidValido(pedidoId)) redirect('/painel');
+  let link: string;
+  try {
+    link = await abrirCobrancaImpulso(await banco(), u.id, u.empresaId, pedidoId);
+  } catch (e) {
+    console.error('[asaas] cobrança do impulso', e instanceof Error ? e.message : e);
+    redirect(`/painel/vagas/${vagaId}?aba=impulsionar&erro=${encodeURIComponent('Não foi possível abrir o pagamento agora. Tente de novo em instantes.')}`);
+  }
+  redirect(link);
 }
 
 export async function acaoCancelarImpulso(f: FormData) {

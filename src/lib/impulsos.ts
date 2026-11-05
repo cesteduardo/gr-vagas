@@ -1,4 +1,4 @@
-import { and, desc, eq, gt } from 'drizzle-orm';
+import { and, desc, eq, gt, sql } from 'drizzle-orm';
 import { IMPULSOS, URL_SITE } from '@/lib/config';
 import type { Banco } from '@/lib/db/client';
 import { empresas, pedidosImpulso, vagas } from '@/lib/db/schema';
@@ -15,7 +15,7 @@ const admins = () => (process.env.ADMIN_EMAILS ?? '').split(',').map((e) => e.tr
 export async function situacaoDoImpulso(db: Banco, vagaId: string, agora = new Date()) {
   const [v] = await db.select({ ate: vagas.impulsoAte }).from(vagas).where(eq(vagas.id, vagaId));
   const [pedido] = await db
-    .select({ id: pedidosImpulso.id, dias: pedidosImpulso.dias, valorCentavos: pedidosImpulso.valorCentavos, criadoEm: pedidosImpulso.criadoEm })
+    .select({ id: pedidosImpulso.id, dias: pedidosImpulso.dias, valorCentavos: pedidosImpulso.valorCentavos, criadoEm: pedidosImpulso.criadoEm, pagoEm: pedidosImpulso.pagoEm })
     .from(pedidosImpulso)
     .where(and(eq(pedidosImpulso.vagaId, vagaId), eq(pedidosImpulso.estado, 'aberto')))
     .orderBy(desc(pedidosImpulso.criadoEm))
@@ -42,12 +42,13 @@ export async function cancelarPedidoImpulso(db: Banco, empresaId: string, pedido
 
 export async function pedidosAbertos(db: Banco) {
   return db
-    .select({ id: pedidosImpulso.id, dias: pedidosImpulso.dias, valorCentavos: pedidosImpulso.valorCentavos, criadoEm: pedidosImpulso.criadoEm, vagaTitulo: vagas.titulo, vagaSlug: vagas.slug, empresa: empresas.nome, impulsoAte: vagas.impulsoAte })
+    .select({ id: pedidosImpulso.id, dias: pedidosImpulso.dias, valorCentavos: pedidosImpulso.valorCentavos, criadoEm: pedidosImpulso.criadoEm, pagoEm: pedidosImpulso.pagoEm, vagaTitulo: vagas.titulo, vagaSlug: vagas.slug, empresa: empresas.nome, impulsoAte: vagas.impulsoAte })
     .from(pedidosImpulso)
     .innerJoin(vagas, eq(vagas.id, pedidosImpulso.vagaId))
     .innerJoin(empresas, eq(empresas.id, pedidosImpulso.empresaId))
     .where(eq(pedidosImpulso.estado, 'aberto'))
-    .orderBy(pedidosImpulso.criadoEm);
+    // Os já pagos primeiro: são os que só esperam ir ao ar.
+    .orderBy(sql`${pedidosImpulso.pagoEm} is null`, pedidosImpulso.criadoEm);
 }
 
 export async function vagasImpulsionadas(db: Banco, agora = new Date()) {

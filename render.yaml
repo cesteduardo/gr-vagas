@@ -25,6 +25,13 @@ services:
         value: x-gr-ip
       - key: ADMIN_EMAILS
         sync: false
+      # Asaas (opcional na demonstração): sem a chave, o pagamento é simulado.
+      - key: ASAAS_API_KEY
+        sync: false
+      - key: ASAAS_WEBHOOK_TOKEN
+        sync: false
+      - key: ASAAS_AMBIENTE
+        value: sandbox
       # Postgres do Neon (região us-east-1, perto do Render em Virginia).
       - key: DATABASE_URL
         sync: false

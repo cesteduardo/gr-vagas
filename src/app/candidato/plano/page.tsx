@@ -14,7 +14,7 @@ export default async function Plano({ searchParams }: { searchParams: Promise<Re
     <>
       <h1 className="titulo-painel" style={{ marginBottom: 10 }}>Plano</h1>
       <p className="leve" style={{ marginBottom: 20 }}>Pesquisar, se candidatar e conversar são sempre grátis. O Plus é opcional.</p>
-      <PlanoTela tipo="candidato" plano={await planoDe(db, u.id)} assinatura={await assinaturaDe(db, u.id)} erro={s.erro?.slice(0, 200)} ok={s.ok === '1'} />
+      <PlanoTela tipo="candidato" plano={await planoDe(db, u.id)} assinatura={await assinaturaDe(db, u.id)} erro={s.erro?.slice(0, 200)} ok={s.ok === '1'} pago={s.pago === '1'} />
     </>
   );
 }

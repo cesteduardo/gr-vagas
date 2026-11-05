@@ -150,6 +150,8 @@ export const assinaturas = pgTable('assinaturas', {
   estado: text('estado').$type<'ativa' | 'cancelada'>().notNull(),
   provedor: text('provedor').notNull(),
   fimEm: quando('fim_em').notNull(),
+  // Lembrete de renovação já mandado para este fim de período.
+  avisoRenovacaoEm: quando('aviso_renovacao_em'),
 });
 
 export const eventosPagamento = pgTable('eventos_pagamento', {
@@ -167,7 +169,21 @@ export const pedidosImpulso = pgTable('pedidos_impulso', {
   estado: text('estado').$type<'aberto' | 'no_ar' | 'recusado'>().notNull().default('aberto'),
   criadoEm: quando('criado_em').notNull().defaultNow(),
   resolvidoEm: quando('resolvido_em'),
+  pagoEm: quando('pago_em'),
 }, (t) => [index('pedidos_impulso_estado').on(t.estado, t.criadoEm)]);
+
+// Cobrança aberta no provedor (Checkout do Asaas): liga o aviso de pagamento ao plano ou ao impulso.
+export const cobrancas = pgTable('cobrancas', {
+  id: text('id').primaryKey(),
+  tipo: text('tipo').$type<'plano' | 'impulso'>().notNull(),
+  usuarioId: uuid('usuario_id').notNull().references(() => usuarios.id, { onDelete: 'cascade' }),
+  plano: text('plano'),
+  pedidoImpulsoId: uuid('pedido_impulso_id').references(() => pedidosImpulso.id, { onDelete: 'set null' }),
+  valorCentavos: integer('valor_centavos').notNull(),
+  link: text('link').notNull(),
+  criadoEm: quando('criado_em').notNull().defaultNow(),
+  pagoEm: quando('pago_em'),
+});
 
 export const denuncias = pgTable('denuncias', {
   id: id(),

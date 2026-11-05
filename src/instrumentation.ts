@@ -43,6 +43,9 @@ export async function register() {
         const { enviarAlertas } = await import('@/lib/perfis');
         const enviados = await enviarAlertas(db);
         console.info(`[alertas] rodada das ${new Date().toLocaleTimeString('pt-BR')}: ${enviados} enviado(s).`);
+        const { avisarRenovacoes } = await import('@/lib/cobrancas');
+        const lembretes = await avisarRenovacoes(db);
+        if (lembretes) console.info(`[planos] ${lembretes} lembrete(s) de renovação.`);
       }
     } catch (e) {
       console.error('[tarefas] falha na rodada:', e instanceof Error ? e.message : 'erro desconhecido');

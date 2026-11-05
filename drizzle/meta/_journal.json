@@ -71,6 +71,13 @@
       "when": 1793897216372,
       "tag": "0009_impulso_de_vaga",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793897556165,
+      "tag": "0010_cobrancas_asaas",
+      "breakpoints": true
     }
   ]
 }

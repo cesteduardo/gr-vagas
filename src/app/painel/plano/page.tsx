@@ -16,7 +16,7 @@ export default async function Plano({ searchParams }: { searchParams: Promise<Re
   return (
     <>
       <h1 className="titulo-painel" style={{ marginBottom: 20 }}>Plano</h1>
-      <PlanoTela tipo="contratante" plano={await planoDe(db, u.id)} assinatura={await assinaturaDe(db, u.id)} uso={uso} erro={s.erro?.slice(0, 200)} ok={s.ok === '1'} />
+      <PlanoTela tipo="contratante" plano={await planoDe(db, u.id)} assinatura={await assinaturaDe(db, u.id)} uso={uso} erro={s.erro?.slice(0, 200)} ok={s.ok === '1'} pago={s.pago === '1'} />
     </>
   );
 }

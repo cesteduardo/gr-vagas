@@ -10,10 +10,10 @@ import { EnvioAuto } from '@/components/envio-auto';
 import { Rodape, Topo } from '@/components/moldura';
 import { exigirUsuario } from '@/lib/auth/sessao';
 import { acessoCandidatura, conversa, marcarLida } from '@/lib/candidaturas';
-import { ETAPAS, RESPOSTAS_RAPIDAS } from '@/lib/config';
+import { ETAPAS } from '@/lib/config';
 import { banco } from '@/lib/db/client';
 import { formatarTelefone } from '@/lib/forms/validators';
-import { apresentacao, perfilDe } from '@/lib/perfis';
+import { perfilDe } from '@/lib/perfis';
 import { limites, planoDe } from '@/lib/planos';
 import { formatarHora, linkWhatsapp } from '@/lib/texto';
 
@@ -31,7 +31,6 @@ export default async function PaginaConversa({ params, searchParams }: { params:
   await marcarLida(db, a);
   const ehEmpresa = a.papel === 'empresa';
   const plus = !ehEmpresa && limites(await planoDe(db, u.id)).plus;
-  const rapidas = ehEmpresa ? RESPOSTAS_RAPIDAS : plus ? [apresentacao({ nome: a.candidatoNome, titulo: a.perfilTitulo ?? '', resumo: a.perfilResumo ?? '', vaga: a.vagaTitulo, empresa: a.empresaNome })] : undefined;
   return (
     <>
       <Topo />
@@ -41,7 +40,7 @@ export default async function PaginaConversa({ params, searchParams }: { params:
         <p className="leve" style={{ marginBottom: 20 }}>Vaga: <Link href={`/vagas/${a.vagaSlug}`}>{a.vagaTitulo}</Link></p>
         {s.nova ? <p className="aviso aviso-ok" role="status" style={{ marginBottom: 16 }}>Candidatura enviada. A resposta da empresa aparece aqui e chega ao seu e-mail.</p> : null}
         <div className="conversa-grade">
-          <Conversa id={id} minhaId={u.id} inicial={msgs.map((m) => ({ ...m, criadaEm: m.criadaEm.toISOString() }))} rapidas={rapidas} />
+          <Conversa id={id} minhaId={u.id} inicial={msgs.map((m) => ({ ...m, criadaEm: m.criadaEm.toISOString() }))} />
           <aside className="painel-caixa conversa-lado">
             {ehEmpresa ? (
               <div className="pilha">
@@ -63,7 +62,6 @@ export default async function PaginaConversa({ params, searchParams }: { params:
               <dl className="fatos-lado">
                 <div><dt>Etapa</dt><dd>{ETAPAS.find((e) => e.id === a.etapa)?.rotulo}</dd></div>
                 <div><dt>A empresa abriu sua candidatura?</dt><dd>{plus ? (a.vistaEm ? `Sim, em ${formatarHora(a.vistaEm)}` : 'Ainda não') : <Link href="/candidato/plano">Disponível no Plus</Link>}</dd></div>
-                {plus ? null : <div><dt>Apresentação pronta para esta vaga</dt><dd><Link href="/candidato/plano">Disponível no Plus</Link></dd></div>}
                 <div><dt>Segurança</dt><dd style={{ fontWeight: 400 }}>Nunca pague para concorrer a uma vaga. Se pedirem dinheiro, <Link href={`/vagas/${a.vagaSlug}`}>denuncie a vaga</Link>.</dd></div>
               </dl>
             )}

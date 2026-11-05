@@ -548,8 +548,6 @@ input[type='color']::-moz-color-swatch { border: 0; border-radius: 50%; }
 .msg-minha time { color: rgb(255 255 255 / .75); }
 .compor { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 10px; }
 main.pagina .compor textarea { height: 50px; min-height: 50px; border-radius: 25px; }
-.rapidas { display: flex; gap: 6px; padding: 8px 10px 0; overflow-x: auto; scrollbar-width: none; }
-.rapidas button { flex: none; max-width: 270px; min-height: 44px; padding: 6px 16px; border: 0; border-radius: 22px; background: var(--superficie); font-size: 13px; line-height: 1.25; text-align: left; cursor: pointer; }
 .fatos-lado { display: grid; gap: 14px; margin: 0; }
 .fatos-lado dt { color: var(--muted); font-size: 13px; }
 .fatos-lado dd { margin: 0; font-weight: 500; letter-spacing: -.02em; }
@@ -728,8 +726,8 @@ html:has(.heroi) { background: #fff linear-gradient(180deg, #2a6deb 0, #3a7bef 2
   :is(.selecao-rolagem, textarea, .mensagens, .gaveta, .modal-corpo) { scrollbar-width: thin; scrollbar-color: transparent transparent; transition: scrollbar-color .2s; }
   :is(.selecao-rolagem, textarea, .mensagens, .gaveta, .modal-corpo):is(:hover, :focus-within) { scrollbar-color: var(--alca) transparent; }
 }
-.rapidas, .faixa-artes, .carrossel, .letreiro, .linha-do-dia { scrollbar-width: none; }
-.rapidas::-webkit-scrollbar, .faixa-artes::-webkit-scrollbar, .carrossel::-webkit-scrollbar, .letreiro::-webkit-scrollbar, .linha-do-dia::-webkit-scrollbar { display: none; }
+.faixa-artes, .carrossel, .letreiro, .linha-do-dia { scrollbar-width: none; }
+.faixa-artes::-webkit-scrollbar, .carrossel::-webkit-scrollbar, .letreiro::-webkit-scrollbar, .linha-do-dia::-webkit-scrollbar { display: none; }
 .selecao .so-leitor { pointer-events: none; }
 
 /* Cargo e botão da porta de quem contrata: uma pílula só, de altura fixa. */

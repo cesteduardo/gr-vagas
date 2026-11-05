@@ -68,13 +68,6 @@ export const ETAPAS = [
 ] as const;
 export type Etapa = (typeof ETAPAS)[number]['id'];
 
-export const RESPOSTAS_RAPIDAS = [
-  'Olá! Recebi sua candidatura e vou analisar o seu perfil.',
-  'Gostaria de marcar uma entrevista. Quais dias e horários ficam bons para você?',
-  'Pode me enviar o seu currículo atualizado?',
-  'Obrigado pelo interesse. Seguimos com outro perfil desta vez, mas guardamos o seu contato.',
-];
-
 // Valores de referência, ainda não decididos.
 export const PRECOS_PROVISORIOS = true;
 export type PlanoId = 'gratis' | 'essencial' | 'profissional' | 'plus';
@@ -97,7 +90,7 @@ export const PLANOS_EMPRESA = [
 
 export const PLANOS_CANDIDATO = [
   { id: 'gratis' as const, nome: 'Grátis', preco: 0, resumo: 'Tudo para procurar emprego, sempre.', itens: ['Pesquisar vagas', 'Candidatura com um arquivo só', 'Conversa com as empresas', 'Alerta diário por e-mail'] },
-  { id: 'plus' as const, nome: 'Plus', preco: 9.9, resumo: 'Para sair na frente nas candidaturas.', itens: ['Sua candidatura aparece primeiro para a empresa', 'Currículo bonito pronto em PDF', 'Apresentação pronta para cada vaga', 'Quanto cada vaga combina com você', 'Saber quando a empresa abriu sua candidatura', 'Alerta assim que a vaga sai', 'Destaque no banco de talentos'] },
+  { id: 'plus' as const, nome: 'Plus', preco: 9.9, resumo: 'Para sair na frente nas candidaturas.', itens: ['Sua candidatura aparece primeiro para a empresa', 'Currículo bonito pronto em PDF', 'Quanto cada vaga combina com você', 'Saber quando a empresa abriu sua candidatura', 'Alerta assim que a vaga sai', 'Destaque no banco de talentos'] },
 ];
 
 export const precoEmReais = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });

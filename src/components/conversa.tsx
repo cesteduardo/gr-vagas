@@ -6,7 +6,7 @@ import { formatarHora } from '@/lib/texto';
 
 export type Msg = { id: string; texto: string; criadaEm: string; autorId: string };
 
-export function Conversa({ id, minhaId, inicial, rapidas }: { id: string; minhaId: string; inicial: Msg[]; rapidas?: string[] }) {
+export function Conversa({ id, minhaId, inicial }: { id: string; minhaId: string; inicial: Msg[] }) {
   const [msgs, setMsgs] = useState(inicial);
   const [texto, setTexto] = useState('');
   const [erro, setErro] = useState<string | null>(null);
@@ -74,11 +74,6 @@ export function Conversa({ id, minhaId, inicial, rapidas }: { id: string; minhaI
         ))}
         <div ref={fim} />
       </div>
-      {rapidas ? (
-        <div className="rapidas" role="group" aria-label="Respostas rápidas">
-          {rapidas.map((r) => <button key={r} type="button" onClick={() => setTexto(r)}>{r}</button>)}
-        </div>
-      ) : null}
       {erro ? <p className="erro" role="alert" style={{ padding: '8px 12px 0' }}>{erro}</p> : null}
       <form className="compor" onSubmit={enviar}>
         <label className="so-leitor" htmlFor="mensagem">Sua mensagem</label>

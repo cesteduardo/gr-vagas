@@ -495,10 +495,7 @@ await plusC.waitForURL('**/vagas/**');
 ok(await plusC.getByText(/Combina \d+% com o seu perfil/).isVisible(), 'Plus mostra quanto a vaga combina');
 await plusC.getByRole('button', { name: 'Candidatar-me' }).click();
 await plusC.waitForURL('**/conversas/**');
-const apres = plusC.locator('.rapidas button').first();
-ok((await apres.innerText()).includes('Sou Paula'), 'Plus traz apresentação pronta');
-await apres.click();
-ok((await plusC.locator('#mensagem').inputValue()).includes('recepcionista'), 'apresentação entra na mensagem');
+ok((await plusC.locator('.rapidas').count()) === 0, 'conversa sem respostas sugeridas');
 
 // Menu de seleção próprio: abre, escolhe e o formulário recebe o valor.
 const menu = await novo();

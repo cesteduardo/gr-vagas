@@ -1063,3 +1063,13 @@ textarea { max-width: 100%; }
 .candidato-linha-tempo p { margin-top: 6px; font-size: 15px; }
 .candidato-contato { position: sticky; top: 100px; display: grid; gap: 12px; }
 .candidato-contato h2 { font-size: 22px; letter-spacing: -.03em; }
+
+/* Administração: busca em linha e cartões de anúncio com foto, situação e prazo. */
+.admin-busca { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-top: 18px; }
+.admin-busca .campo { flex: 1 1 260px; }
+.admin-anuncio { flex-wrap: nowrap; justify-content: flex-start; }
+.admin-anuncio > .conversa-foto { flex: none; }
+.admin-anuncio > div:nth-child(2) { flex: 1 1 auto; min-width: 0; }
+.admin-anuncio > .linha-botoes { flex: none; justify-content: flex-end; }
+@media (max-width: 720px) { .admin-anuncio { flex-wrap: wrap; } .admin-anuncio > div:nth-child(2) { flex-basis: calc(100% - 72px); } .admin-anuncio > .linha-botoes { flex-basis: 100%; justify-content: flex-start; } }
+.admin-anuncio .selecao { min-width: 120px; }

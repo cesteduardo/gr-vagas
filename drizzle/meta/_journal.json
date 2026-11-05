@@ -50,6 +50,13 @@
       "when": 1793895465901,
       "tag": "0006_perfil_visivel",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793895722390,
+      "tag": "0007_anuncio_na_inicial",
+      "breakpoints": true
     }
   ]
 }

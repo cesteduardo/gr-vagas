@@ -1,7 +1,7 @@
 import { ordenarPorCombinacao } from '@/lib/combinar';
 import type { Cv } from '@/lib/curriculo';
 import { randomBytes } from 'node:crypto';
-import { and, count, desc, eq, gt, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gt, ilike, isNotNull, sql } from 'drizzle-orm';
 import { abrirSessao } from '@/lib/auth/contas';
 import { cidadePorSlug, VALIDADE_VAGA_DIAS } from '@/lib/config';
 import type { Banco } from '@/lib/db/client';
@@ -225,7 +225,7 @@ export async function empresasDoLetreiro(db: Banco, agora = new Date()) {
     .from(empresas)
     .innerJoin(usuarios, eq(usuarios.id, empresas.donoId))
     .innerJoin(vagas, and(eq(vagas.empresaId, empresas.id), eq(vagas.estado, 'aberta'), gt(vagas.expiraEm, agora)))
-    .where(isNotNull(usuarios.emailConfirmadoEm))
+    .where(and(isNotNull(usuarios.emailConfirmadoEm), gt(empresas.anuncioAte, agora)))
     .groupBy(empresas.id)
     .orderBy(desc(sql`count(${vagas.id})`))
     .limit(40);
@@ -236,4 +236,41 @@ export async function empresasDoLetreiro(db: Banco, agora = new Date()) {
 export async function vagasQueCombinam(db: Banco, d: { titulo?: string; texto: string; cidadeSlug?: string; cv?: Cv }, quantas = 6) {
   const todas = await db.select(colunasVaga).from(vagas).innerJoin(empresas, eq(empresas.id, vagas.empresaId)).innerJoin(usuarios, eq(usuarios.id, empresas.donoId)).where(condicoesBusca({})).orderBy(desc(vagas.destaque), desc(vagas.publicadaEm)).limit(500);
   return ordenarPorCombinacao({ titulo: d.titulo ?? '', resumo: d.texto, cidadeSlug: d.cidadeSlug, cv: d.cv }, todas, quantas);
+}
+
+// Tela inicial: só quem tem anúncio no ar. É espaço pago, posto pelo administrador.
+export async function vagasAnunciadas(db: Banco, agora = new Date(), limite = 12) {
+  return db
+    .select(colunasVaga)
+    .from(vagas)
+    .innerJoin(empresas, eq(empresas.id, vagas.empresaId))
+    .innerJoin(usuarios, eq(usuarios.id, empresas.donoId))
+    .where(and(condicoesBusca({}, agora), gt(empresas.anuncioAte, agora)))
+    .orderBy(desc(vagas.destaque), desc(vagas.publicadaEm))
+    .limit(limite);
+}
+
+export async function empresasParaAdmin(db: Banco, q = '', agora = new Date()) {
+  const abertas = sql<number>`(select count(*)::int from ${vagas} where ${vagas.empresaId} = ${empresas.id} and ${vagas.estado} = 'aberta' and ${vagas.expiraEm} > ${agora})`;
+  return db
+    .select({ id: empresas.id, nome: empresas.nome, slug: empresas.slug, anuncioAte: empresas.anuncioAte, email: usuarios.email, confirmada: sql<boolean>`${usuarios.emailConfirmadoEm} is not null`, abertas, temLogo: sql<boolean>`${empresas.logo} is not null` })
+    .from(empresas)
+    .innerJoin(usuarios, eq(usuarios.id, empresas.donoId))
+    .where(q.trim() ? ilike(empresas.nome, `%${escaparLike(q.trim())}%`) : undefined)
+    .orderBy(desc(sql`coalesce(${empresas.anuncioAte} > ${agora}, false)`), asc(empresas.anuncioAte), desc(abertas), asc(empresas.nome))
+    .limit(300);
+}
+
+/** Põe a empresa na tela inicial por mais `dias`; se já estiver no ar, soma ao prazo que falta. */
+export async function anunciarEmpresa(db: Banco, empresaId: string, dias: number, agora = new Date()) {
+  if (!Number.isInteger(dias) || dias < 1 || dias > 366) return false;
+  const [e] = await db.select({ ate: empresas.anuncioAte }).from(empresas).where(eq(empresas.id, empresaId));
+  if (!e) return false;
+  const base = e.ate && e.ate > agora ? e.ate : agora;
+  await db.update(empresas).set({ anuncioAte: new Date(base.getTime() + dias * DIA_MS) }).where(eq(empresas.id, empresaId));
+  return true;
+}
+
+export async function tirarAnuncio(db: Banco, empresaId: string) {
+  await db.update(empresas).set({ anuncioAte: null }).where(eq(empresas.id, empresaId));
 }

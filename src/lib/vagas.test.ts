@@ -6,7 +6,7 @@ import type { Banco } from '@/lib/db/client';
 import { vagas } from '@/lib/db/schema';
 import { errosVaga } from '@/lib/forms/vaga';
 import { bancoEmMemoria, umaEmpresa, umaVaga } from '@/lib/teste-apoio';
-import { alternarDestaque, buscarVagas, empresasDoLetreiro, vagasQueCombinam, mudarEstadoVaga, publicarSemConta, publicarVaga, vagaAceitaCandidatura, vagaPublica, vagasParecidas } from './vagas';
+import { alternarDestaque, anunciarEmpresa, buscarVagas, empresasDoLetreiro, tirarAnuncio, vagasAnunciadas, vagasQueCombinam, mudarEstadoVaga, publicarSemConta, publicarVaga, vagaAceitaCandidatura, vagaPublica, vagasParecidas } from './vagas';
 
 let db: Banco;
 beforeAll(async () => {
@@ -72,6 +72,8 @@ describe('letreiro', () => {
   it('só mostra empresa confirmada com vaga aberta', async () => {
     const a = await umaEmpresa(db, { titulo: 'Vaga do letreiro' });
     const b = await umaEmpresa(db, { titulo: 'Sem confirmar' }, false);
+    await anunciarEmpresa(db, a.empresaId, 30);
+    await anunciarEmpresa(db, b.empresaId, 30);
     const nomes = (await empresasDoLetreiro(db)).map((e) => e.id);
     expect(nomes).toContain(a.empresaId);
     expect(nomes).not.toContain(b.empresaId);
@@ -169,5 +171,25 @@ describe('planos', () => {
   it('sem provedor não assina', async () => {
     const e = await umaEmpresa(db);
     expect(await assinar(db, e.usuarioId, 'essencial', null)).toEqual({ ok: false, erro: 'A assinatura ainda não está disponível.' });
+  });
+});
+
+describe('tela inicial só com anúncio pago', () => {
+  it('sem anúncio não aparece; com anúncio aparece até vencer; tirar do ar some na hora', async () => {
+    const pagou = await umaEmpresa(db, { titulo: 'Vaga anunciada' });
+    const naoPagou = await umaEmpresa(db, { titulo: 'Vaga sem anúncio' });
+    const ids = async (agora?: Date) => (await vagasAnunciadas(db, agora)).map((v) => v.id);
+    expect(await ids()).not.toContain(pagou.vagaId);
+    expect(await anunciarEmpresa(db, pagou.empresaId, 7)).toBe(true);
+    expect(await ids()).toContain(pagou.vagaId);
+    expect(await ids()).not.toContain(naoPagou.vagaId);
+    expect((await empresasDoLetreiro(db)).map((e) => e.id)).not.toContain(naoPagou.empresaId);
+    // Vence depois do prazo; estender soma ao que falta.
+    expect(await ids(new Date(Date.now() + 8 * 86400000))).not.toContain(pagou.vagaId);
+    await anunciarEmpresa(db, pagou.empresaId, 7);
+    expect(await ids(new Date(Date.now() + 8 * 86400000))).toContain(pagou.vagaId);
+    await tirarAnuncio(db, pagou.empresaId);
+    expect(await ids()).not.toContain(pagou.vagaId);
+    expect(await anunciarEmpresa(db, pagou.empresaId, 0)).toBe(false);
   });
 });

@@ -1,0 +1,1 @@
+ALTER TABLE "empresas" ADD COLUMN "anuncio_ate" timestamp with time zone;

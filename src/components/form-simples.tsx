@@ -167,7 +167,7 @@ export function EntrarTeste() {
     <div className="teste-contas">
       <p><strong>Demonstração</strong> <span className="nota">entre com uma conta de teste</span></p>
       <div className="teste-botoes">
-        {[['empresa@teste.com', 'Empresa'], ['candidato@teste.com', 'Candidato']].map(([email, rotulo]) => (
+        {[['empresa@teste.com', 'Empresa'], ['candidato@teste.com', 'Candidato'], ['admin@teste.com', 'Administração']].map(([email, rotulo]) => (
           <form key={email} action={fm.despachar}>
             <input type="hidden" name="email" value={email} />
             <input type="hidden" name="senha" value="teste1234" />

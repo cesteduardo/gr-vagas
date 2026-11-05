@@ -15,7 +15,7 @@ import { join } from 'node:path';
 import { guardarImagemVaga, publicarSemConta, publicarVaga, salvarArte } from '@/lib/vagas';
 
 // Contas de teste, só no modo de demonstração.
-export const CONTAS_TESTE = { empresa: 'empresa@teste.com', candidato: 'candidato@teste.com', senha: 'teste1234' };
+export const CONTAS_TESTE = { empresa: 'empresa@teste.com', candidato: 'candidato@teste.com', admin: 'admin@teste.com', senha: 'teste1234' };
 
 const EXEMPLOS = [
   ['Auxiliar administrativo', 'Administrativo', 'Escritório Modelo (exemplo)', 'CLT', 'Presencial', 'sao-jose-do-rio-preto', 220000, ['inicio-imediato', 'fins-de-semana-livres']],
@@ -45,10 +45,19 @@ export async function POST() {
     if (r.ok) {
       criadas += 1;
       await db.update(usuarios).set({ emailConfirmadoEm: new Date() }).where(eq(usuarios.email, email));
+      // Metade dos exemplos com anúncio no ar, para a tela inicial ter o que mostrar.
+      const [dono] = await db.select({ id: usuarios.id }).from(usuarios).where(eq(usuarios.email, email));
+      if (i % 2 === 0 && dono) await db.update(empresas).set({ anuncioAte: new Date(Date.now() + MES) }).where(eq(empresas.donoId, dono.id));
     }
   }
   const [ja] = await db.select({ id: usuarios.id }).from(usuarios).where(eq(usuarios.email, CONTAS_TESTE.empresa));
   if (!ja) await contasDeTeste(db);
+  // Administração geral: a conta de teste do dono do site.
+  const [adm] = await db.select({ id: usuarios.id }).from(usuarios).where(eq(usuarios.email, CONTAS_TESTE.admin));
+  if (!adm) {
+    await criarConta(db, { tipo: 'candidato', nome: 'Administração GR Vagas', email: CONTAS_TESTE.admin, telefone: '17999990009', senha: CONTAS_TESTE.senha });
+    await db.update(usuarios).set({ emailConfirmadoEm: new Date() }).where(eq(usuarios.email, CONTAS_TESTE.admin));
+  }
   return NextResponse.json({ criadas, contas: CONTAS_TESTE });
 }
 
@@ -81,6 +90,7 @@ async function contasDeTeste(db: Db) {
   const pasta = join(process.cwd(), 'public', 'demo');
   await db.update(empresas).set({ logo: readFileSync(join(pasta, 'logo.png')), logoMime: 'image/png', descricao: 'Empresa fictícia, criada só para testar o GR Vagas. Loja de roupas e acessórios no centro de Rio Preto.', perfil: { setor: 'Comércio e varejo', tamanho: '11 a 50 pessoas', fundacao: '2015', porQue: 'Equipe pequena, horários combinados e espaço para crescer.', cidadeSlug: 'sao-jose-do-rio-preto', endereco: 'Rua Exemplo, 100, Centro', site: 'empresateste.com.br', instagram: 'empresateste', whatsapp: '17999990001', razaoSocial: 'Empresa Teste Ltda.', cnpj: '11222333000181' } }).where(eq(empresas.id, e!.id));
   await aplicarEvento(db, { id: 'teste-empresa', usuarioId: emp, plano: 'profissional', tipo: 'pago', fimEm: new Date(Date.now() + MES) });
+  await db.update(empresas).set({ anuncioAte: new Date(Date.now() + MES) }).where(eq(empresas.id, e!.id));
 
   const v1 = await publicarVaga(db, emp, e!.id, { titulo: 'Atendente de loja', tags: ['primeiro-emprego', 'inicio-imediato'], area: 'Atendimento e vendas', contrato: 'CLT', modalidade: 'Presencial', cidadeSlug: 'sao-jose-do-rio-preto', salarioCentavos: 210000, descricao: 'Vaga de teste: atender clientes, organizar a loja e operar o caixa.', requisitos: 'Ensino médio completo\nGostar de atender pessoas', beneficios: 'Vale-transporte\nVale-refeição\nComissão' });
   const v2 = await publicarVaga(db, emp, e!.id, { titulo: 'Auxiliar de estoque', tags: ['sem-experiencia', 'fins-de-semana-livres'], area: 'Logística e transporte', contrato: 'CLT', modalidade: 'Presencial', cidadeSlug: 'mirassol', salarioCentavos: 195000, descricao: 'Vaga de teste: receber mercadorias, organizar o estoque e separar pedidos.', requisitos: 'Organização\nDisponibilidade de horário', beneficios: 'Vale-transporte\nCesta básica' });

@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import type { EstadoForm } from '@/components/formulario-base';
 import { abrirSessao, criarConta, definirSenha, dentroDoLimite, destinoSeguro, entrarComSenha, pedirLink, usarLink } from '@/lib/auth/contas';
 import { ipDe } from '@/lib/ip';
-import { exigirAdmin, exigirCandidato, exigirContratante, exigirUsuario, gravarCookieSessao, sairDaSessao, usuarioAtual } from '@/lib/auth/sessao';
+import { ehAdmin, exigirAdmin, exigirCandidato, exigirContratante, exigirUsuario, gravarCookieSessao, sairDaSessao, usuarioAtual } from '@/lib/auth/sessao';
 import { avisarNovaCandidatura, candidatarLogado, enviarMensagem, mudarEtapa } from '@/lib/candidaturas';
 import { cidadePorSlug, SIMULADOR, URL_SITE, urlSiteSegura } from '@/lib/config';
 import { banco } from '@/lib/db/client';
@@ -20,7 +20,7 @@ import { cvValido } from '@/lib/curriculo';
 import { aplicarCurriculo } from '@/lib/perfil-do-curriculo';
 import { alternarSalva, apagarAlerta, criarAlerta, excluirConta, guardarCurriculo, salvarPerfil } from '@/lib/perfis';
 import { assinar, cancelar } from '@/lib/planos';
-import { alternarDestaque, denunciar, editarVaga, mudarEstadoVaga, publicarVaga, resolverDenuncia, salvarArte, vagaAceitaCandidatura } from '@/lib/vagas';
+import { alternarDestaque, denunciar, editarVaga, mudarEstadoVaga, publicarVaga, resolverDenuncia, salvarArte, vagaAceitaCandidatura, anunciarEmpresa, tirarAnuncio } from '@/lib/vagas';
 import { eq } from 'drizzle-orm';
 
 const texto = (f: FormData, n: string) => String(f.get(n) ?? '');
@@ -78,7 +78,7 @@ export async function acaoEntrarSenha(_: EstadoForm, f: FormData): Promise<Estad
   const r = await entrarComSenha(await banco(), email, senha);
   if (!r.ok) return { erro: r.erro };
   await gravarCookieSessao(r.sessao);
-  redirect(destinoSeguro(texto(f, 'destino'), r.tipo === 'contratante' ? '/painel' : '/candidato'));
+  redirect(destinoSeguro(texto(f, 'destino'), ehAdmin(texto(f, 'email')) ? '/admin' : r.tipo === 'contratante' ? '/painel' : '/candidato'));
 }
 
 export async function acaoCriarConta(_: EstadoForm, f: FormData): Promise<EstadoForm> {
@@ -338,6 +338,18 @@ export async function acaoExcluirConta(_: EstadoForm, f: FormData): Promise<Esta
 export async function acaoResolverDenuncia(f: FormData) {
   await exigirAdmin();
   await resolverDenuncia(await banco(), texto(f, 'id'), texto(f, 'encerrar') === '1');
+  revalidatePath('/admin/denuncias');
+}
+
+// Espaço pago da tela inicial: o administrador recebe e põe no ar.
+export async function acaoAnuncio(f: FormData) {
+  await exigirAdmin();
+  const db = await banco();
+  const empresaId = texto(f, 'empresaId');
+  if (!/^[0-9a-f-]{36}$/i.test(empresaId)) return;
+  if (texto(f, 'tirar') === '1') await tirarAnuncio(db, empresaId);
+  else await anunciarEmpresa(db, empresaId, Number(texto(f, 'dias')));
   revalidatePath('/admin');
+  revalidatePath('/');
 }
 

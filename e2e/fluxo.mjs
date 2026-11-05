@@ -412,7 +412,7 @@ if (process.env.ADMIN) {
   ok(!adm.url().includes('/admin'), 'admin barra quem não é');
   await criarEmpresa(adm, process.env.ADMIN, 'Moderação').catch(() => {});
   if (adm.url().includes('/painel')) {
-    await adm.goto('/admin');
+    await adm.goto('/admin/denuncias');
     ok((await adm.getByText('Pediram dinheiro para a entrevista').count()) >= 1, 'moderação vê a denúncia');
     await adm.locator('.cartao', { hasText: 'Pediram dinheiro' }).first().getByRole('button', { name: 'Arquivar' }).click();
     await adm.waitForTimeout(500);

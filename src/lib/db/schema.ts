@@ -47,6 +47,8 @@ export const empresas = pgTable('empresas', {
   logoMime: text('logo_mime'),
   capa: bytes('capa'),
   capaMime: text('capa_mime'),
+  // Espaço pago na tela inicial: o administrador põe no ar até esta data.
+  anuncioAte: quando('anuncio_ate'),
   criadoEm: quando('criado_em').notNull().defaultNow(),
 });
 

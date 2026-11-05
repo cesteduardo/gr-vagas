@@ -7,7 +7,7 @@ import { PortaCandidato } from '@/components/portas';
 import { CarrosselVagas, LetreiroEmpresas } from '@/components/vitrines';
 import { CIDADE_PRINCIPAL, CIDADES, URL_SITE } from '@/lib/config';
 import { banco } from '@/lib/db/client';
-import { buscarVagas, empresasDoLetreiro } from '@/lib/vagas';
+import { buscarVagas, empresasDoLetreiro, vagasAnunciadas } from '@/lib/vagas';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { alternates: { canonical: '/' } };
@@ -21,7 +21,9 @@ const FAQ = [
 
 export default async function Inicio() {
   const db = await banco();
-  const { itens, total } = await buscarVagas(db, {});
+  // Vitrines da tela inicial: só anúncios pagos. A busca continua mostrando todas as vagas.
+  const { total } = await buscarVagas(db, {});
+  const itens = await vagasAnunciadas(db);
   const empresas = await empresasDoLetreiro(db);
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -51,10 +53,13 @@ export default async function Inicio() {
         {itens.length ? (
           <section className="vitrine" aria-labelledby="t-vagas">
             <div className="embrulho secao-cabeca">
-              <h2 id="t-vagas">Vagas abertas<sup>{total}</sup></h2>
-              <Link className="btn btn-claro" href="/vagas">Ver todas</Link>
+              <div>
+                <h2 id="t-vagas">Vagas em destaque</h2>
+                <p className="secao-nota">Espaço de anúncio.</p>
+              </div>
+              <Link className="btn btn-claro" href="/vagas">{total === 1 ? 'Ver a vaga aberta' : `Ver as ${total} vagas abertas`}</Link>
             </div>
-            <CarrosselVagas vagas={itens.slice(0, 12)} />
+            <CarrosselVagas vagas={itens} />
           </section>
         ) : null}
 
@@ -62,7 +67,7 @@ export default async function Inicio() {
           <section className="vitrine" aria-labelledby="t-empresas">
             <div className="embrulho secao-cabeca">
               <h2 id="t-empresas">Quem está contratando</h2>
-              <p className="secao-nota">Toque em uma empresa para ver as vagas dela.</p>
+              <p className="secao-nota">Empresas anunciantes. <Link href="/anunciantes">Quer a sua aqui?</Link></p>
             </div>
             <LetreiroEmpresas empresas={empresas} />
           </section>

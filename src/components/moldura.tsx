@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { acaoSair } from '@/app/acoes';
-import { usuarioAtual } from '@/lib/auth/sessao';
+import { usuarioAtual, ehAdmin } from '@/lib/auth/sessao';
 import { naoLidas } from '@/lib/candidaturas';
 import { SIMULADOR } from '@/lib/config';
 import { banco } from '@/lib/db/client';
@@ -37,6 +37,7 @@ export async function Topo() {
     const empresa = u.tipo === 'contratante';
     // As não lidas ficam em Conversas, que leva direto à caixa de entrada.
     itens = [{ href: empresa ? '/painel' : '/candidato', rotulo: empresa ? 'Meu painel' : 'Minha conta' }, { href: empresa ? '/painel/conversas' : '/candidato/conversas', rotulo: 'Conversas', contagem: await naoLidas(db, u.id, empresa ? 'empresa' : 'candidato') }, ...publico];
+    if (ehAdmin(u.email)) itens = [{ href: '/admin', rotulo: 'Administração' }, ...itens];
     acao = empresa ? { href: '/publicar', rotulo: 'Publicar vaga' } : { href: '/vagas', rotulo: 'Ver vagas' };
     extra = <form action={acaoSair}><button type="submit" className="btn btn-claro" style={{ width: '100%' }}>Sair</button></form>;
   }

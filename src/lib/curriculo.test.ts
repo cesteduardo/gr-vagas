@@ -66,3 +66,10 @@ describe('validação', () => {
     expect(periodo('2017', '2017')).toBe('2017');
   });
 });
+
+describe('chave de tela não vai para o banco', () => {
+  it('cvValido descarta o _k que o editor põe em cada item', () => {
+    const cv = cvValido({ idiomas: [{ lingua: 'Inglês', nivel: 'Básico', _k: 'i1' }], experiencias: [{ cargo: 'Atendente', inicio: '2020', fim: '', atual: true, empresa: '', descricao: '', _k: 'i2' }], formacao: [{ curso: 'Técnico', inicio: '', fim: '', instituicao: '', descricao: '', _k: 'i3' }] });
+    expect(JSON.stringify(cv)).not.toContain('_k');
+  });
+});

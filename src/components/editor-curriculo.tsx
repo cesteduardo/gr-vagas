@@ -11,6 +11,14 @@ import Link from 'next/link';
 import { CampoArquivo } from './campo-arquivo';
 import { Selecao } from './selecao';
 
+// Chave fixa de cada item das listas, só no navegador: com a posição como chave, uma experiência nova
+// no topo (ou uma removida no meio) fazia o React reaproveitar os campos do item errado. O servidor
+// descarta o campo ao salvar (cvValido), então ele nunca chega ao banco.
+let sequencia = 0;
+const comChave = <T extends object>(x: T): T & { _k: string } => ({ ...x, _k: (x as { _k?: string })._k ?? `i${(sequencia += 1)}` });
+const chave = (x: object) => (x as { _k?: string })._k ?? '';
+const comChaves = (cv: Cv): Cv => ({ ...cv, idiomas: (cv.idiomas ?? []).map(comChave), formacao: (cv.formacao ?? []).map(comChave), experiencias: (cv.experiencias ?? []).map(comChave) });
+
 type Inicial = { titulo: string; cidadeSlug: string; resumo: string; talentos: boolean; visivel: boolean; cv: Cv; curriculoNome: string | null; candidatoId: string };
 
 const mascaraData = (v: string) => {
@@ -37,7 +45,7 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
   const [resumo, setResumo] = useState(inicial.resumo);
   const [talentos, setTalentos] = useState(inicial.talentos);
   const [visivel, setVisivel] = useState(inicial.visivel);
-  const [cv, setCv] = useState<Cv>({ idiomas: [], formacao: [], experiencias: [], habilidades: [], ...inicial.cv });
+  const [cv, setCv] = useState<Cv>(() => comChaves({ idiomas: [], formacao: [], experiencias: [], habilidades: [], ...inicial.cv }));
   const [nascimento, setNascimento] = useState(isoParaBr(inicial.cv.nascimento));
   const [habilidade, setHabilidade] = useState('');
   const [arquivo, setArquivo] = useState(inicial.curriculoNome);
@@ -67,9 +75,9 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
     if (a.resumo) setResumo((r) => (r.trim() ? r : a.resumo!));
     setCv((atual) => {
       const n: Cv = { ...atual };
-      if (a.cv.experiencias?.length) n.experiencias = [...(atual.experiencias ?? []), ...a.cv.experiencias];
-      if (a.cv.formacao?.length) n.formacao = [...(atual.formacao ?? []), ...a.cv.formacao];
-      if (a.cv.idiomas?.length) n.idiomas = [...(atual.idiomas ?? []), ...a.cv.idiomas];
+      if (a.cv.experiencias?.length) n.experiencias = [...(atual.experiencias ?? []), ...a.cv.experiencias.map(comChave)];
+      if (a.cv.formacao?.length) n.formacao = [...(atual.formacao ?? []), ...a.cv.formacao.map(comChave)];
+      if (a.cv.idiomas?.length) n.idiomas = [...(atual.idiomas ?? []), ...a.cv.idiomas.map(comChave)];
       if (a.cv.habilidades?.length) n.habilidades = [...new Set([...(atual.habilidades ?? []), ...a.cv.habilidades])].slice(0, 20);
       for (const k of ['objetivo', 'estadoCivil', 'endereco', 'portfolio'] as const) if (a.cv[k] && !atual[k]) n[k] = a.cv[k];
       return n;
@@ -132,9 +140,9 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
         </div>
       </Bloco>
 
-      <Bloco numero={3} titulo="Idiomas" acao={<button type="button" className="btn btn-claro btn-peq" onClick={() => muda({ idiomas: [...(cv.idiomas ?? []), { lingua: '', nivel: 'Básico' }] })}>Adicionar idioma</button>}>
+      <Bloco numero={3} titulo="Idiomas" acao={<button type="button" className="btn btn-claro btn-peq" onClick={() => muda({ idiomas: [...(cv.idiomas ?? []), comChave({ lingua: '', nivel: 'Básico' })] })}>Adicionar idioma</button>}>
         {cv.idiomas?.length ? cv.idiomas.map((it, i) => (
-          <div key={i} className="cv-linha">
+          <div key={chave(it)} className="cv-linha">
             <label className="campo"><span>Idioma</span><input type="text" maxLength={40} placeholder="Inglês" value={it.lingua} onChange={(e) => muda({ idiomas: cv.idiomas!.map((x, j) => (j === i ? { ...x, lingua: e.target.value } : x)) })} /></label>
             <label className="campo"><span>Nível</span><Selecao value={it.nivel} onChange={(e) => muda({ idiomas: cv.idiomas!.map((x, j) => (j === i ? { ...x, nivel: e.target.value } : x)) })}>{NIVEIS.map((n) => <option key={n}>{n}</option>)}</Selecao></label>
             <button type="button" className="btn btn-claro btn-peq cv-tirar" onClick={() => tirar('idiomas', i)}>Remover</button>
@@ -142,9 +150,9 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
         )) : <p className="nota">Nenhum idioma ainda.</p>}
       </Bloco>
 
-      <Bloco numero={4} titulo="Formação acadêmica" acao={<button type="button" className="btn btn-claro btn-peq" onClick={() => muda({ formacao: [...(cv.formacao ?? []), { inicio: '', fim: '', curso: '', instituicao: '', descricao: '' }] })}>Adicionar formação</button>}>
+      <Bloco numero={4} titulo="Formação acadêmica" acao={<button type="button" className="btn btn-claro btn-peq" onClick={() => muda({ formacao: [...(cv.formacao ?? []), comChave({ inicio: '', fim: '', curso: '', instituicao: '', descricao: '' })] })}>Adicionar formação</button>}>
         {cv.formacao?.length ? cv.formacao.map((f: Formacao, i) => (
-          <div key={i} className="cv-cartao">
+          <div key={chave(f)} className="cv-cartao">
             <div className="cv-grade">
               <label className="campo inteiro"><span>Curso</span><input type="text" maxLength={120} placeholder="Técnico em informática" value={f.curso} onChange={(e) => mudaItem('formacao', i, { curso: e.target.value })} /></label>
               <label className="campo inteiro"><span>Instituição</span><input type="text" maxLength={120} placeholder="SENAC" value={f.instituicao} onChange={(e) => mudaItem('formacao', i, { instituicao: e.target.value })} /></label>
@@ -157,9 +165,9 @@ export function EditorCurriculo({ inicial }: { inicial: Inicial }) {
         )) : <p className="nota">Nenhuma formação ainda.</p>}
       </Bloco>
 
-      <Bloco numero={5} titulo="Experiência profissional" acao={<button type="button" className="btn btn-claro btn-peq" onClick={() => muda({ experiencias: [{ inicio: '', fim: '', atual: false, cargo: '', empresa: '', descricao: '' }, ...(cv.experiencias ?? [])] })}>Adicionar experiência</button>}>
+      <Bloco numero={5} titulo="Experiência profissional" acao={<button type="button" className="btn btn-claro btn-peq" onClick={() => muda({ experiencias: [comChave({ inicio: '', fim: '', atual: false, cargo: '', empresa: '', descricao: '' }), ...(cv.experiencias ?? [])] })}>Adicionar experiência</button>}>
         {cv.experiencias?.length ? cv.experiencias.map((x: Experiencia, i) => (
-          <div key={i} className="cv-cartao">
+          <div key={chave(x)} className="cv-cartao">
             <div className="cv-grade">
               <label className="campo"><span>Cargo</span><input type="text" maxLength={120} placeholder="Atendente" value={x.cargo} onChange={(e) => mudaItem('experiencias', i, { cargo: e.target.value })} /></label>
               <label className="campo"><span>Empresa</span><input type="text" maxLength={120} placeholder="Loja Exemplo" value={x.empresa} onChange={(e) => mudaItem('experiencias', i, { empresa: e.target.value })} /></label>
